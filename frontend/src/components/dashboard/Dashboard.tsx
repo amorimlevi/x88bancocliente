@@ -309,7 +309,7 @@ const Dashboard = ({ onLogout, dadosUsuario, userId = '0001', saldoInicial, cred
   return (
     <div className="flex flex-col h-screen bg-white dark:bg-black">
       {/* Main Content - Páginas Completas */}
-      <main className="flex-1 scroll-container-ios ios-safe-top ios-safe-bottom">
+      <main className="flex-1 scroll-container-ios">
         {renderPagina()}
       </main>
 
