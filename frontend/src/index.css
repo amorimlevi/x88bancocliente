@@ -7,31 +7,16 @@
   html {
     font-family: 'Inter', system-ui, sans-serif;
     scroll-behavior: smooth;
-    /* Altura fixa para iOS */
-    height: 100%;
-    width: 100%;
-    overflow: hidden;
   }
   
   body {
     @apply bg-white dark:bg-black text-light-text-primary dark:text-dark-text-primary transition-colors;
-    /* Altura fixa para iOS */
-    height: 100%;
-    width: 100%;
-    overflow: auto;
     /* Desabilita o bounce scroll do iOS */
     overscroll-behavior: none;
     -webkit-overflow-scrolling: touch;
-  }
-  
-  /* iOS Safe Area - apenas para dispositivos iOS */
-  @supports (-webkit-touch-callout: none) {
-    body {
-      padding-top: env(safe-area-inset-top);
-      padding-bottom: env(safe-area-inset-bottom);
-      padding-left: env(safe-area-inset-left);
-      padding-right: env(safe-area-inset-right);
-    }
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
   }
 
   * {
