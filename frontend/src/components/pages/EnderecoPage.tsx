@@ -1,16 +1,18 @@
 import { useState } from 'react'
 import { ArrowLeftIcon, MapPinIcon } from '../ui/Icons'
+import { DadosUsuario } from '../auth/Cadastro'
 
 interface EnderecoPageProps {
   onVoltar: () => void
+  dadosUsuario?: DadosUsuario | null
 }
 
-const EnderecoPage = ({ onVoltar }: EnderecoPageProps) => {
+const EnderecoPage = ({ onVoltar, dadosUsuario }: EnderecoPageProps) => {
   const [endereco, setEndereco] = useState({
-    morada: 'Rua da Liberdade, 123, 2º Andar',
-    codigoPostal: '1250-142',
-    cidade: 'Lisboa',
-    distrito: 'Lisboa',
+    morada: dadosUsuario?.morada || 'Rua da Liberdade, 123, 2º Andar',
+    codigoPostal: dadosUsuario?.codigoPostal || '1250-142',
+    cidade: dadosUsuario?.cidade || 'Lisboa',
+    distrito: dadosUsuario?.distrito || 'Lisboa',
     pais: 'Portugal'
   })
 

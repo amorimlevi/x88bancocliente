@@ -2,9 +2,19 @@ import { useState } from 'react'
 import { UserIcon, EyeIcon, EyeOffIcon, MapPinIcon } from '../ui/Icons'
 import { ThemeToggle } from '../ui/ThemeToggle'
 
+export interface DadosUsuario {
+  nome: string
+  email: string
+  telefone: string
+  morada: string
+  codigoPostal: string
+  cidade: string
+  distrito: string
+}
+
 interface CadastroProps {
   onVoltar: () => void
-  onCadastro: (email: string) => void
+  onCadastro: (dados: DadosUsuario) => void
 }
 
 const Cadastro = ({ onVoltar, onCadastro }: CadastroProps) => {
@@ -37,7 +47,16 @@ const Cadastro = ({ onVoltar, onCadastro }: CadastroProps) => {
   const handleSubmitEtapa2 = (e: React.FormEvent) => {
     e.preventDefault()
     // Aqui você implementaria o cadastro real
-    onCadastro(email)
+    const dadosUsuario: DadosUsuario = {
+      nome,
+      email,
+      telefone,
+      morada,
+      codigoPostal,
+      cidade,
+      distrito
+    }
+    onCadastro(dadosUsuario)
   }
 
   return (

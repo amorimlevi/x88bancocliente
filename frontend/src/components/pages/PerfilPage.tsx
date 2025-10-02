@@ -2,27 +2,43 @@ import { useState } from 'react'
 import { UserIcon, LogOutIcon, BellIcon, LockIcon, CreditCardIcon, MapPinIcon } from '../ui/Icons'
 import DadosBancariosPage from './DadosBancariosPage'
 import EnderecoPage from './EnderecoPage'
+import { DadosUsuario } from '../auth/Cadastro'
 
 interface PerfilPageProps {
   onLogout?: () => void
+  dadosUsuario: DadosUsuario | null
+  userId?: string
+  dadosBancarios: {
+    iban: string
+    titular: string
+    banco: string
+    nib: string
+    mbWay: string
+  }
+  onSalvarDadosBancarios: (dados: { iban: string; titular: string; banco: string; nib: string; mbWay: string }) => void
 }
 
-const PerfilPage = ({ onLogout }: PerfilPageProps) => {
+const PerfilPage = ({ onLogout, dadosUsuario, userId = '0001', dadosBancarios, onSalvarDadosBancarios }: PerfilPageProps) => {
   const [mostrarDadosBancarios, setMostrarDadosBancarios] = useState(false)
   const [mostrarEndereco, setMostrarEndereco] = useState(false)
 
   if (mostrarDadosBancarios) {
-    return <DadosBancariosPage onVoltar={() => setMostrarDadosBancarios(false)} />
+    return <DadosBancariosPage 
+      onVoltar={() => setMostrarDadosBancarios(false)} 
+      dadosBancarios={dadosBancarios}
+      onSalvar={onSalvarDadosBancarios}
+    />
   }
 
   if (mostrarEndereco) {
-    return <EnderecoPage onVoltar={() => setMostrarEndereco(false)} />
+    return <EnderecoPage onVoltar={() => setMostrarEndereco(false)} dadosUsuario={dadosUsuario} />
   }
+
   const usuario = {
-    id: '0001',
-    nome: 'João Silva',
-    email: 'joao.silva@email.com',
-    telefone: '+351 912 345 678',
+    id: userId,
+    nome: dadosUsuario?.nome || 'João Silva',
+    email: dadosUsuario?.email || 'joao.silva@email.com',
+    telefone: dadosUsuario?.telefone || '+351 912 345 678',
     dataCadastro: '15/03/2024'
   }
 

@@ -1,12 +1,13 @@
 import { useState } from 'react'
-import { CreditCardIcon } from '../ui/Icons'
+import { CreditCardIcon, WalletIcon } from '../ui/Icons'
 
 interface CreditoPageProps {
   creditoDisponivel: number
+  saldoX88: number
   onSubmit: (valor: number, motivo: string, parcelas: number, periodo: number, valorTotal: number, valorParcela: number) => void
 }
 
-const CreditoPage = ({ creditoDisponivel, onSubmit }: CreditoPageProps) => {
+const CreditoPage = ({ creditoDisponivel, saldoX88, onSubmit }: CreditoPageProps) => {
   const [valor, setValor] = useState('')
   const [motivo, setMotivo] = useState('')
   const [parcelas, setParcelas] = useState(1)
@@ -29,8 +30,8 @@ const CreditoPage = ({ creditoDisponivel, onSubmit }: CreditoPageProps) => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (valor && dentroDoLimite) {
-      onSubmit(Number(valor), parcelas, periodo, valorTotal, valorParcela)
+    if (valor && dentroDoLimite && motivo) {
+      onSubmit(Number(valor), motivo, parcelas, periodo, valorTotal, valorParcela)
     }
   }
 
@@ -57,12 +58,23 @@ const CreditoPage = ({ creditoDisponivel, onSubmit }: CreditoPageProps) => {
           </div>
         </div>
 
-        {/* Crédito Disponível */}
-        <div className="bg-brand-50 dark:bg-brand-950 p-4 rounded-xl mb-6 border border-brand-200 dark:border-brand-800">
-          <p className="text-sm text-brand-700 dark:text-brand-400 mb-1">Crédito Disponível</p>
-          <p className="text-3xl font-bold text-brand-600 dark:text-brand-500">
-            {creditoDisponivel.toLocaleString('pt-PT')} X88
-          </p>
+        {/* Card Verde - Saldo Disponível */}
+        <div className="mb-3">
+          <div className="rounded-2xl p-6 shadow-md" style={{ backgroundColor: '#15FF5D', borderColor: '#15FF5D' }}>
+            <div className="flex items-center justify-between mb-4">
+              <p className="text-dark black text-4x1 font-medium">Saldo Disponível</p>
+              <WalletIcon size="sm" className="text-dark black" />
+            </div>
+            
+            <div className="mb-3">
+              <p className="text-dark black text-5xl font-bold leading-none mb-2">
+                {saldoX88.toLocaleString('pt-PT')} x88
+              </p>
+              <p className="text-dark black/90 text-lg">
+               
+              </p>
+            </div>
+          </div>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -78,11 +90,11 @@ const CreditoPage = ({ creditoDisponivel, onSubmit }: CreditoPageProps) => {
               className={`input w-full text-lg ${!dentroDoLimite && valor ? 'border-red-500' : ''}`}
               placeholder="0"
               min="1"
-              max={creditoDisponivel}
+              max={saldoX88}
               required
             />
             {!dentroDoLimite && valor && (
-              <p className="text-red-600 text-sm mt-2">⚠️ Valor acima do crédito disponível</p>
+              <p className="text-red-600 text-sm mt-2">⚠️ Valor acima do saldo disponível</p>
             )}
           </div>
 

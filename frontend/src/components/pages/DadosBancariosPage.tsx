@@ -3,17 +3,17 @@ import { ArrowLeftIcon, CreditCardIcon } from '../ui/Icons'
 
 interface DadosBancariosPageProps {
   onVoltar: () => void
+  dadosBancarios: {
+    iban: string
+    titular: string
+    banco: string
+    nib: string
+    mbWay: string
+  }
+  onSalvar: (dados: { iban: string; titular: string; banco: string; nib: string; mbWay: string }) => void
 }
 
-const DadosBancariosPage = ({ onVoltar }: DadosBancariosPageProps) => {
-  const [dadosBancarios, setDadosBancarios] = useState({
-    iban: 'PT50 0002 0123 1234 5678 9015 4',
-    titular: 'João Silva',
-    banco: 'Caixa Geral de Depósitos',
-    nib: '0002 0123 1234 5678 9015 4',
-    mbWay: '+351 912 345 678'
-  })
-
+const DadosBancariosPage = ({ onVoltar, dadosBancarios, onSalvar }: DadosBancariosPageProps) => {
   const [modoEdicao, setModoEdicao] = useState(false)
   const [dadosTemp, setDadosTemp] = useState(dadosBancarios)
 
@@ -28,8 +28,9 @@ const DadosBancariosPage = ({ onVoltar }: DadosBancariosPageProps) => {
   }
 
   const handleSalvar = () => {
-    setDadosBancarios(dadosTemp)
+    onSalvar(dadosTemp)
     setModoEdicao(false)
+    onVoltar()
   }
 
   return (
@@ -73,7 +74,7 @@ const DadosBancariosPage = ({ onVoltar }: DadosBancariosPageProps) => {
                   placeholder="PT50 0000 0000 0000 0000 0000 0"
                 />
               ) : (
-                <p className="text-black dark:text-white font-medium font-mono">{dadosBancarios.iban}</p>
+                <p className="text-black dark:text-white font-medium font-mono">{dadosBancarios.iban || 'Não informado'}</p>
               )}
             </div>
 
@@ -89,7 +90,7 @@ const DadosBancariosPage = ({ onVoltar }: DadosBancariosPageProps) => {
                   placeholder="Nome completo"
                 />
               ) : (
-                <p className="text-black dark:text-white font-medium">{dadosBancarios.titular}</p>
+                <p className="text-black dark:text-white font-medium">{dadosBancarios.titular || 'Não informado'}</p>
               )}
             </div>
 
@@ -105,7 +106,7 @@ const DadosBancariosPage = ({ onVoltar }: DadosBancariosPageProps) => {
                   placeholder="Nome do banco"
                 />
               ) : (
-                <p className="text-black dark:text-white font-medium">{dadosBancarios.banco}</p>
+                <p className="text-black dark:text-white font-medium">{dadosBancarios.banco || 'Não informado'}</p>
               )}
             </div>
 
@@ -121,7 +122,7 @@ const DadosBancariosPage = ({ onVoltar }: DadosBancariosPageProps) => {
                   placeholder="0000 0000 0000 0000 0000 0"
                 />
               ) : (
-                <p className="text-black dark:text-white font-medium font-mono">{dadosBancarios.nib}</p>
+                <p className="text-black dark:text-white font-medium font-mono">{dadosBancarios.nib || 'Não informado'}</p>
               )}
             </div>
 
@@ -137,7 +138,7 @@ const DadosBancariosPage = ({ onVoltar }: DadosBancariosPageProps) => {
                   placeholder="+351 900 000 000"
                 />
               ) : (
-                <p className="text-black dark:text-white font-medium">{dadosBancarios.mbWay}</p>
+                <p className="text-black dark:text-white font-medium">{dadosBancarios.mbWay || 'Não informado'}</p>
               )}
             </div>
           </div>

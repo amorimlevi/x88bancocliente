@@ -1,8 +1,8 @@
-import { CheckIcon, XIcon, ClockIcon, ArrowDownIcon, CreditCardIcon } from '../ui/Icons'
+import { CheckIcon, XIcon, ClockIcon, ArrowDownIcon, CreditCardIcon, ArrowUpIcon } from '../ui/Icons'
 
 interface Transacao {
   id: string
-  tipo: 'saque' | 'credito'
+  tipo: 'saque' | 'credito' | 'recebido'
   valor: number
   valorEuro?: number
   telefone?: string
@@ -14,6 +14,8 @@ interface Transacao {
   valorTotal?: number
   valorParcela?: number
   juros?: number
+  remetenteId?: string
+  remetenteNome?: string
 }
 
 interface MinhasTransacoesProps {
