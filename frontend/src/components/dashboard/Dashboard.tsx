@@ -309,7 +309,11 @@ const Dashboard = ({ onLogout, dadosUsuario, userId = '0001', saldoInicial, cred
   return (
     <div className="h-full bg-white dark:bg-black flex flex-col">
       {/* Main Content - Páginas Completas */}
-      <main className="flex-1 overflow-y-auto overscroll-none" style={{ WebkitOverflowScrolling: 'touch', paddingBottom: 'calc(5rem + env(safe-area-inset-bottom))' }}>
+      <main className="flex-1 overflow-y-auto overscroll-none" style={{ 
+        WebkitOverflowScrolling: 'touch',
+        paddingTop: 'env(safe-area-inset-top)',
+        paddingBottom: 'calc(5rem + env(safe-area-inset-bottom))'
+      }}>
         {renderPagina()}
       </main>
 
