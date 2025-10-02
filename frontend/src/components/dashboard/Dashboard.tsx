@@ -39,49 +39,12 @@ interface DashboardProps {
 const Dashboard = ({ onLogout, dadosUsuario, userId = '0001', saldoInicial, creditoInicial, isNewAccount = false }: DashboardProps) => {
   const [paginaAtual, setPaginaAtual] = useState('inicio')
   const [paginaAnterior, setPaginaAnterior] = useState<string | null>(null)
-  const [isRefreshing, setIsRefreshing] = useState(false)
 
   useEffect(() => {
     window.scrollTo(0, 0)
   }, [paginaAtual])
 
-  useEffect(() => {
-    let startY = 0
-    let pulling = false
 
-    const handleTouchStart = (e: TouchEvent) => {
-      if (window.scrollY === 0) {
-        startY = e.touches[0].pageY
-        pulling = true
-      }
-    }
-
-    const handleTouchMove = (e: TouchEvent) => {
-      if (!pulling) return
-      const currentY = e.touches[0].pageY
-      const pullDistance = currentY - startY
-
-      if (pullDistance > 100 && !isRefreshing) {
-        pulling = false
-        setIsRefreshing(true)
-        window.location.reload()
-      }
-    }
-
-    const handleTouchEnd = () => {
-      pulling = false
-    }
-
-    document.addEventListener('touchstart', handleTouchStart)
-    document.addEventListener('touchmove', handleTouchMove)
-    document.addEventListener('touchend', handleTouchEnd)
-
-    return () => {
-      document.removeEventListener('touchstart', handleTouchStart)
-      document.removeEventListener('touchmove', handleTouchMove)
-      document.removeEventListener('touchend', handleTouchEnd)
-    }
-  }, [isRefreshing])
   
   // Dados do usuário - se for nova conta, começa zerado
   const [saldoX88, setSaldoX88] = useState(saldoInicial ?? 5000)

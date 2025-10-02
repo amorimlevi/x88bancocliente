@@ -154,7 +154,10 @@ const Login = ({ onLogin, onMostrarCadastro }: LoginProps) => {
           
           <button
             type="button"
-            onClick={onMostrarCadastro}
+            onClick={(e) => {
+              e.preventDefault()
+              onMostrarCadastro()
+            }}
             className="w-full mt-6 py-3 px-6 rounded-2xl font-semibold border-2 text-black hover:opacity-80 transition-opacity relative z-10 touch-manipulation"
             style={{ borderColor: '#000', backgroundColor: 'transparent' }}
           >
