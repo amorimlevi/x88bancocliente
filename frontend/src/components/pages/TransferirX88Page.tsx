@@ -74,7 +74,7 @@ const TransferirX88Page = ({ saldoDisponivel, onSubmit, userId = '0001' }: Trans
   }
 
   return (
-    <div className="p-4 pb-24 bg-white dark:bg-black min-h-screen scroll-container-ios">
+    <div className="p-4 pt-6 pb-24 bg-white dark:bg-black min-h-screen scroll-container-ios">
       <div className="max-w-md mx-auto">
         {/* Header */}
         <div className="mb-3 flex items-center justify-between">
