@@ -29,7 +29,7 @@ const PerfilPage = ({ onLogout, dadosUsuario, userId = '0001', dadosBancarios, o
   useEffect(() => {
     const metaThemeColors = document.querySelectorAll('meta[name="theme-color"]')
     metaThemeColors.forEach(meta => {
-      meta.setAttribute('content', '#10b981')
+      meta.setAttribute('content', '#22c55e')
     })
 
     return () => {
