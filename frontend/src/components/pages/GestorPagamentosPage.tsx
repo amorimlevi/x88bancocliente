@@ -97,7 +97,7 @@ const GestorPagamentosPage = () => {
   }
 
   return (
-    <div className="p-4 pt-4 pb-24 scroll-container-ios">
+    <div className="p-4 min-h-full">
       <div className="max-w-md mx-auto">
         {/* Header */}
         <div className="mb-6">
