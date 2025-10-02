@@ -59,6 +59,28 @@ const HomePage = ({
             </div>
           </div>
         </div>
+         {/* Botão Transferir X88 */}
+        <div className="mb-6">
+          <button
+            onClick={() => onNavigate('transferir-x88')}
+            className="w-full rounded-2xl p-5 shadow-md text-center hover:shadow-lg transition-shadow relative"
+            style={{ backgroundColor: '#FFF700', borderColor: '#FFF700' }}
+          >
+            <p className="text-black text-2xl mb-1 font-bold">
+              Pagar
+            </p>
+            <p className="text-black text-sm font-medium">
+             
+            </p>
+            <div className="absolute bottom-4 right-4">
+              <img 
+                src="https://res.cloudinary.com/dxchbdcai/image/upload/v1759251700/LOGOTIPO_X88_BLACK_PNG.fw_zpepci.png" 
+                alt="X88"
+                className="w-12 h-4 object-contain"
+              />
+            </div>
+          </button>
+        </div>
 
         {/* Card Branco - Crédito Disponível */}
         <div className="mb-3">
@@ -75,6 +97,7 @@ const HomePage = ({
           </button>
         </div>
 
+       
 
         {/* Minhas Transações */}
         <MinhasTransacoes transacoes={transacoes} />

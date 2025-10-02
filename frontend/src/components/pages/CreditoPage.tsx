@@ -12,6 +12,8 @@ const CreditoPage = ({ creditoDisponivel, saldoX88, onSubmit }: CreditoPageProps
   const [motivo, setMotivo] = useState('')
   const [parcelas, setParcelas] = useState(1)
   const [periodo, setPeriodo] = useState(30)
+  const [mostrarModalParcelas, setMostrarModalParcelas] = useState(false)
+  const [mostrarModalMotivo, setMostrarModalMotivo] = useState(false)
 
   const calcularJuros = (numParcelas: number): number => {
     const tabelaJuros: { [key: number]: number } = {
@@ -40,6 +42,17 @@ const CreditoPage = ({ creditoDisponivel, saldoX88, onSubmit }: CreditoPageProps
     { dias: 7, label: '7 dias (Semanal)' },
     { dias: 15, label: '15 dias (Quinzenal)' },
     { dias: 30, label: '30 dias (Mensal)' }
+  ]
+  const opcoesMotivo = [
+    'Emergência médica',
+    'Pagamento de contas',
+    'Investimento',
+    'Educação',
+    'Reforma/Construção',
+    'Compra de equipamento',
+    'Capital de giro',
+    'Viagem',
+    'Outros'
   ]
 
   return (
@@ -86,13 +99,13 @@ const CreditoPage = ({ creditoDisponivel, saldoX88, onSubmit }: CreditoPageProps
           {/* Valor */}
           <div>
             <label className="block text-sm font-semibold text-black dark:text-white mb-3">
-              Quanto você precisa?
+              Valor solicitado
             </label>
             <input
               type="number"
               value={valor}
               onChange={(e) => setValor(e.target.value)}
-              className={`input w-full text-lg ${!dentroDoLimite && valor ? 'border-red-500' : ''}`}
+              className={`input w-full text-lg [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${!dentroDoLimite && valor ? 'border-red-500' : ''}`}
               placeholder="0"
               min="1"
               max={saldoX88}
@@ -106,30 +119,21 @@ const CreditoPage = ({ creditoDisponivel, saldoX88, onSubmit }: CreditoPageProps
           {/* Parcelas */}
           <div>
             <label className="block text-sm font-semibold text-black dark:text-white mb-3">
-              Em quantas vezes?
+              Parcelas
             </label>
-            <div className="grid grid-cols-4 gap-2">
-              {opcioesParcelas.map((num) => (
-                <button
-                  key={num}
-                  type="button"
-                  onClick={() => setParcelas(num)}
-                  className={`p-3 rounded-xl border-2 transition-all ${
-                    parcelas === num
-                      ? 'border-brand-500 bg-brand-50 dark:bg-brand-950 text-brand-600 font-bold'
-                      : 'border-neutral-200 dark:border-neutral-700'
-                  }`}
-                >
-                  {num}x
-                </button>
-              ))}
-            </div>
+            <button
+              type="button"
+              onClick={() => setMostrarModalParcelas(true)}
+              className="input w-full text-lg text-left"
+            >
+              {parcelas}x
+            </button>
           </div>
 
           {/* Período */}
           <div>
             <label className="block text-sm font-semibold text-black dark:text-white mb-3">
-              A cada quanto tempo?
+              Vencimento
             </label>
             <div className="grid grid-cols-3 gap-3">
               {opcoesPeriodo.map((op) => (
@@ -193,13 +197,15 @@ const CreditoPage = ({ creditoDisponivel, saldoX88, onSubmit }: CreditoPageProps
             <label className="block text-sm font-semibold text-black dark:text-white mb-3">
               Motivo do Empréstimo
             </label>
-            <textarea
-              value={motivo}
-              onChange={(e) => setMotivo(e.target.value)}
-              className="input w-full min-h-[100px] resize-none"
-              placeholder="Explique o motivo..."
-              required
-            />
+            <button
+              type="button"
+              onClick={() => setMostrarModalMotivo(true)}
+              className="input w-full text-lg text-left"
+            >
+              <span className={motivo ? 'text-black dark:text-white' : 'text-neutral-400'}>
+                {motivo || 'Selecione o motivo'}
+              </span>
+            </button>
           </div>
 
           {/* Botão */}
@@ -212,6 +218,92 @@ const CreditoPage = ({ creditoDisponivel, saldoX88, onSubmit }: CreditoPageProps
             <span>Enviar Solicitação</span>
           </button>
         </form>
+
+        {/* Modal Flutuante de Parcelas */}
+        {mostrarModalParcelas && (
+          <div 
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            onClick={() => setMostrarModalParcelas(false)}
+          >
+            <div 
+              className="bg-white dark:bg-neutral-900 rounded-3xl shadow-2xl max-w-md w-full p-6 animate-in fade-in zoom-in duration-200"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3 className="text-xl font-bold text-black dark:text-white mb-4">
+                Em quantas vezes?
+              </h3>
+              <div className="grid grid-cols-3 gap-3 max-h-[60vh] overflow-y-auto">
+                {opcioesParcelas.map((num) => (
+                  <button
+                    key={num}
+                    type="button"
+                    onClick={() => {
+                      setParcelas(num)
+                      setMostrarModalParcelas(false)
+                    }}
+                    className={`p-4 rounded-xl border-2 transition-all text-lg font-semibold ${
+                      parcelas === num
+                        ? 'border-brand-500 bg-brand-500 text-white'
+                        : 'border-neutral-200 dark:border-neutral-700 hover:border-brand-300'
+                    }`}
+                  >
+                    {num}x
+                  </button>
+                ))}
+              </div>
+              <button
+                type="button"
+                onClick={() => setMostrarModalParcelas(false)}
+                className="w-full mt-4 p-3 bg-neutral-200 dark:bg-neutral-800 rounded-xl font-semibold"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Modal Flutuante de Motivo */}
+        {mostrarModalMotivo && (
+          <div 
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            onClick={() => setMostrarModalMotivo(false)}
+          >
+            <div 
+              className="bg-white dark:bg-neutral-900 rounded-3xl shadow-2xl max-w-md w-full p-6 animate-in fade-in zoom-in duration-200"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3 className="text-xl font-bold text-black dark:text-white mb-4">
+                Motivo do Empréstimo
+              </h3>
+              <div className="space-y-2 max-h-[60vh] overflow-y-auto">
+                {opcoesMotivo.map((opcao) => (
+                  <button
+                    key={opcao}
+                    type="button"
+                    onClick={() => {
+                      setMotivo(opcao)
+                      setMostrarModalMotivo(false)
+                    }}
+                    className={`w-full p-4 rounded-xl border-2 transition-all text-left ${
+                      motivo === opcao
+                        ? 'border-brand-500 bg-brand-500 text-white font-semibold'
+                        : 'border-neutral-200 dark:border-neutral-700 hover:border-brand-300'
+                    }`}
+                  >
+                    {opcao}
+                  </button>
+                ))}
+              </div>
+              <button
+                type="button"
+                onClick={() => setMostrarModalMotivo(false)}
+                className="w-full mt-4 p-3 bg-neutral-200 dark:bg-neutral-800 rounded-xl font-semibold"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )

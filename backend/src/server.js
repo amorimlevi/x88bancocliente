@@ -17,6 +17,14 @@ const saldosUsuarios = {
   '2756': 0
 }
 
+// Armazena dados dos usuários (em produção, usar banco de dados)
+const usuariosCadastrados = {
+  '0001': { id: '0001', nome: 'João Silva', email: 'joao@x88.com' },
+  '0002': { id: '0002', nome: 'Maria Santos', email: 'maria@x88.com' },
+  '1234': { id: '1234', nome: 'Pedro Costa', email: 'pedro@x88.com' },
+  '5678': { id: '5678', nome: 'Ana Oliveira', email: 'ana@x88.com' }
+}
+
 // Gera um ID único de 4 dígitos
 const generateUniqueUserId = () => {
   let userId
@@ -99,6 +107,25 @@ app.get('/api/saldo', (req, res) => {
     taxaConversao: 1.5,
     saldoEuro: 1875
   })
+})
+
+// Buscar usuário por ID
+app.get('/api/usuario/:id', (req, res) => {
+  const { id } = req.params
+  
+  const usuario = usuariosCadastrados[id]
+  
+  if (usuario) {
+    res.json({
+      success: true,
+      usuario
+    })
+  } else {
+    res.status(404).json({
+      success: false,
+      message: 'Usuário não encontrado'
+    })
+  }
 })
 
 // Armazena transações de transferências (em produção, usar banco de dados)

@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react'
-import Header from './Header'
 import BottomNav from './BottomNav'
 import HomePage from '../pages/HomePage'
 import SacarPage from '../pages/SacarPage'
 import CreditoPage from '../pages/CreditoPage'
 import HistoricoPage from '../pages/HistoricoPage'
 import PerfilPage from '../pages/PerfilPage'
+import TransferirX88Page from '../pages/TransferirX88Page'
 import { DadosUsuario } from '../auth/Cadastro'
 
 interface Transacao {
@@ -147,6 +147,33 @@ const Dashboard = ({ onLogout, dadosUsuario, userId = '0001', saldoInicial, cred
     setPaginaAtual('inicio')
   }
 
+  const handleTransferencia = (destinatario: string, valor: number) => {
+    const novaTransacao: Transacao = {
+      id: Date.now().toString(),
+      tipo: 'saque',
+      valor,
+      telefone: `ID: ${destinatario}`,
+      data: new Date().toISOString().split('T')[0],
+      status: 'pendente'
+    }
+    setTransacoes([novaTransacao, ...transacoes])
+    setPaginaAtual('inicio')
+  }
+
+  const handleTransferenciaX88 = (destinatarioId: string, valor: number) => {
+    const novaTransacao: Transacao = {
+      id: Date.now().toString(),
+      tipo: 'saque',
+      valor,
+      telefone: `Transferência X88 - ID: ${destinatarioId}`,
+      data: new Date().toISOString().split('T')[0],
+      status: 'aprovado'
+    }
+    setTransacoes([novaTransacao, ...transacoes])
+    setSaldoX88(saldoX88 - valor)
+    setPaginaAtual('inicio')
+  }
+
   const transacoesPendentes = transacoes.filter(t => t.status === 'pendente').length
   const saldoEmEuros = saldoX88 * taxaConversao
 
@@ -200,6 +227,14 @@ const Dashboard = ({ onLogout, dadosUsuario, userId = '0001', saldoInicial, cred
           dadosBancarios={dadosBancarios}
           onSalvarDadosBancarios={handleSalvarDadosBancarios}
         />
+      case 'transferir-x88':
+        return (
+          <TransferirX88Page
+            saldoDisponivel={saldoX88}
+            onSubmit={handleTransferenciaX88}
+            userId={userId}
+          />
+        )
       default:
         return null
     }
