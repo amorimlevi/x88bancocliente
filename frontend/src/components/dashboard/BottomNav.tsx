@@ -29,7 +29,7 @@ const BottomNav = ({ paginaAtual, onNavigate }: BottomNavProps) => {
   ]
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-white dark:bg-neutral-900 border-t border-neutral-200 dark:border-neutral-800 safe-area-bottom z-50">
+    <nav className="fixed bottom-0 left-0 right-0 bg-white dark:bg-neutral-900 border-t border-neutral-200 dark:border-neutral-800 ios-safe-bottom z-50">
       <div className="max-w-md mx-auto flex items-center justify-around px-2 py-3">
         {menuItems.map((item) => {
           const Icon = item.icon

@@ -346,7 +346,7 @@ const Dashboard = ({ onLogout, dadosUsuario, userId = '0001', saldoInicial, cred
   return (
     <div className="flex flex-col h-screen bg-white dark:bg-black">
       {/* Main Content - Páginas Completas */}
-      <main className="flex-1 overflow-y-auto">
+      <main className="flex-1 overflow-y-auto ios-safe-top ios-safe-bottom">
         {renderPagina()}
       </main>
 
