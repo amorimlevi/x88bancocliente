@@ -143,15 +143,6 @@
   /* Professional Layout */
   .container-app {
     @apply min-h-screen bg-white dark:bg-black transition-colors;
-    /* Adiciona espaço extra para status bar em mobile */
-    padding-top: max(20px, env(safe-area-inset-top));
-  }
-  
-  /* Container para páginas principais (Login, Cadastro, Dashboard) */
-  .page-container {
-    @apply w-full min-h-screen;
-    /* Espaço seguro para status bar e notch */
-    padding-top: max(60px, calc(env(safe-area-inset-top) + 40px));
   }
 
   /* Status indicators */

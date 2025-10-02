@@ -346,10 +346,7 @@ const Dashboard = ({ onLogout, dadosUsuario, userId = '0001', saldoInicial, cred
   return (
     <div className="flex flex-col h-screen bg-white dark:bg-black">
       {/* Main Content - Páginas Completas */}
-      <main className="flex-1 overflow-y-auto" style={{ 
-        paddingTop: 'max(20px, env(safe-area-inset-top))',
-        paddingBottom: 'max(80px, calc(env(safe-area-inset-bottom) + 80px))'
-      }}>
+      <main className="flex-1 overflow-y-auto">
         {renderPagina()}
       </main>
 

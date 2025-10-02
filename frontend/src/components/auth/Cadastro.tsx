@@ -60,8 +60,8 @@ const Cadastro = ({ onVoltar, onCadastro }: CadastroProps) => {
   }
 
   return (
-    <div className="page-container flex items-center justify-center px-4 py-8">
-      <div className="absolute right-6" style={{ top: 'max(24px, calc(env(safe-area-inset-top) + 8px))' }}>
+    <div className="container-app flex items-center justify-center px-4 py-8">
+      <div className="absolute top-6 right-6">
         <ThemeToggle />
       </div>
       
