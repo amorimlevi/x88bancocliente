@@ -159,11 +159,11 @@
   /* iOS Safe Area Container */
   @supports (-webkit-touch-callout: none) {
     .ios-safe-top {
-      padding-top: max(1.5rem, calc(env(safe-area-inset-top) + 1rem));
+      padding-top: env(safe-area-inset-top);
     }
     
     .ios-safe-bottom {
-      padding-bottom: max(1.5rem, calc(env(safe-area-inset-bottom) + 1rem));
+      padding-bottom: env(safe-area-inset-bottom);
     }
     
     /* Container para telas iOS - Scroll otimizado */
