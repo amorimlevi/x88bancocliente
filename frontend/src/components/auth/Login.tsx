@@ -41,7 +41,11 @@ const Login = ({ onLogin, onMostrarCadastro }: LoginProps) => {
   }
 
   return (
-    <div className="h-full flex items-center justify-center px-4 py-8" style={{ backgroundColor: '#15FF5D', paddingTop: 'calc(2rem + env(safe-area-inset-top))' }}>
+    <div className="min-h-screen flex items-center justify-center px-4" style={{ 
+      backgroundColor: '#15FF5D', 
+      paddingTop: 'calc(2rem + env(safe-area-inset-top))',
+      paddingBottom: 'max(2rem, env(safe-area-inset-bottom))'
+    }}>
       <div className="absolute ios-safe-top" style={{ top: '1.5rem', right: '1.5rem' }}>
         <ThemeToggle customClassName="p-3 rounded-xl hover:opacity-80 transition-opacity" />
       </div>
