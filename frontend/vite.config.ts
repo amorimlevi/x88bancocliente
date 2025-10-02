@@ -8,12 +8,39 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
+      workbox: {
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,jpg,jpeg,webp}'],
+        runtimeCaching: [
+          {
+            urlPattern: /^https:\/\/res\.cloudinary\.com\/.*/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'cloudinary-images',
+              expiration: {
+                maxEntries: 50,
+                maxAgeSeconds: 60 * 60 * 24 * 30 // 30 dias
+              }
+            }
+          },
+          {
+            urlPattern: /^http:\/\/localhost:3002\/api\/.*/i,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'api-cache',
+              expiration: {
+                maxEntries: 50,
+                maxAgeSeconds: 60 * 5 // 5 minutos
+              }
+            }
+          }
+        ]
+      },
       manifest: {
-        name: 'X88 Colaborador - Solicitação de Pagamentos',
-        short_name: 'X88 Colaborador',
-        description: 'App simples para colaboradores solicitarem pagamentos',
-        theme_color: '#22c55e',
-        background_color: '#000000',
+        name: 'X88 Bank Colaborador',
+        short_name: 'X88 Bank',
+        description: 'Banco digital X88 - Gerencie seu saldo, empréstimos e transferências',
+        theme_color: '#15FF5D',
+        background_color: '#15FF5D',
         display: 'standalone',
         orientation: 'portrait',
         scope: '/',
@@ -22,14 +49,19 @@ export default defineConfig({
           {
             src: 'pwa-192x192.png',
             sizes: '192x192',
-            type: 'image/png'
+            type: 'image/png',
+            purpose: 'any maskable'
           },
           {
             src: 'pwa-512x512.png',
             sizes: '512x512',
-            type: 'image/png'
+            type: 'image/png',
+            purpose: 'any maskable'
           }
         ]
+      },
+      devOptions: {
+        enabled: true
       }
     })
   ],
