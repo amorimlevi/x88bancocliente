@@ -1,7 +1,9 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { UserIcon, LogOutIcon, BellIcon, LockIcon, CreditCardIcon, MapPinIcon } from '../ui/Icons'
 import DadosBancariosPage from './DadosBancariosPage'
 import EnderecoPage from './EnderecoPage'
+import NotificacoesPage from './NotificacoesPage'
+import SegurancaPage from './SegurancaPage'
 import { DadosUsuario } from '../auth/Cadastro'
 
 interface PerfilPageProps {
@@ -21,6 +23,26 @@ interface PerfilPageProps {
 const PerfilPage = ({ onLogout, dadosUsuario, userId = '0001', dadosBancarios, onSalvarDadosBancarios }: PerfilPageProps) => {
   const [mostrarDadosBancarios, setMostrarDadosBancarios] = useState(false)
   const [mostrarEndereco, setMostrarEndereco] = useState(false)
+  const [mostrarNotificacoes, setMostrarNotificacoes] = useState(false)
+  const [mostrarSeguranca, setMostrarSeguranca] = useState(false)
+
+  useEffect(() => {
+    const metaThemeColors = document.querySelectorAll('meta[name="theme-color"]')
+    metaThemeColors.forEach(meta => {
+      meta.setAttribute('content', '#10b981')
+    })
+
+    return () => {
+      metaThemeColors.forEach(meta => {
+        const media = meta.getAttribute('media')
+        if (media === '(prefers-color-scheme: dark)') {
+          meta.setAttribute('content', '#000000')
+        } else {
+          meta.setAttribute('content', '#ffffff')
+        }
+      })
+    }
+  }, [])
 
   if (mostrarDadosBancarios) {
     return <DadosBancariosPage 
@@ -32,6 +54,14 @@ const PerfilPage = ({ onLogout, dadosUsuario, userId = '0001', dadosBancarios, o
 
   if (mostrarEndereco) {
     return <EnderecoPage onVoltar={() => setMostrarEndereco(false)} dadosUsuario={dadosUsuario} />
+  }
+
+  if (mostrarNotificacoes) {
+    return <NotificacoesPage onVoltar={() => setMostrarNotificacoes(false)} />
+  }
+
+  if (mostrarSeguranca) {
+    return <SegurancaPage onVoltar={() => setMostrarSeguranca(false)} />
   }
 
   const usuario = {
@@ -125,7 +155,10 @@ const PerfilPage = ({ onLogout, dadosUsuario, userId = '0001', dadosBancarios, o
               </div>
             </button>
             
-            <button className="w-full p-4 flex items-center gap-3 border-b border-neutral-100 dark:border-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors">
+            <button 
+              onClick={() => setMostrarNotificacoes(true)}
+              className="w-full p-4 flex items-center gap-3 border-b border-neutral-100 dark:border-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
+            >
               <div className="w-10 h-10 bg-brand-100 dark:bg-brand-900/30 rounded-full flex items-center justify-center">
                 <BellIcon size="md" className="text-brand-600 dark:text-brand-500" />
               </div>
@@ -135,7 +168,10 @@ const PerfilPage = ({ onLogout, dadosUsuario, userId = '0001', dadosBancarios, o
               </div>
             </button>
             
-            <button className="w-full p-4 flex items-center gap-3 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors">
+            <button 
+              onClick={() => setMostrarSeguranca(true)}
+              className="w-full p-4 flex items-center gap-3 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
+            >
               <div className="w-10 h-10 bg-brand-100 dark:bg-brand-900/30 rounded-full flex items-center justify-center">
                 <LockIcon size="md" className="text-brand-600 dark:text-brand-500" />
               </div>

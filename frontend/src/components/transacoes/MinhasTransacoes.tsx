@@ -2,7 +2,7 @@ import { CheckIcon, XIcon, ClockIcon, ArrowDownIcon, CreditCardIcon, ArrowUpIcon
 
 interface Transacao {
   id: string
-  tipo: 'saque' | 'credito' | 'recebido'
+  tipo: 'saque' | 'credito' | 'recebido' | 'transferencia'
   valor: number
   valorEuro?: number
   telefone?: string
@@ -16,6 +16,8 @@ interface Transacao {
   juros?: number
   remetenteId?: string
   remetenteNome?: string
+  destinatarioId?: string
+  destinatarioNome?: string
 }
 
 interface MinhasTransacoesProps {
@@ -45,16 +47,36 @@ const MinhasTransacoes = ({ transacoes }: MinhasTransacoesProps) => {
     }
   }
 
-  const getTipoIcon = (tipo: string) => {
-    return tipo === 'saque' ? (
-      <ArrowDownIcon size="md" className="text-brand-600 dark:text-brand-500" />
-    ) : (
-      <CreditCardIcon size="md" className="text-black dark:text-brand-400" />
-    )
+  const getTipoIcon = (tipo: string, telefone?: string) => {
+    // Detecta transferências antigas pelo campo telefone
+    if (tipo === 'saque' && telefone?.includes('Transferência X88') || telefone?.startsWith('ID:')) {
+      return <ArrowUpIcon size="md" className="text-red-600 dark:text-red-500" />
+    }
+    
+    switch (tipo) {
+      case 'saque':
+        return <ArrowDownIcon size="md" className="text-brand-600 dark:text-brand-500" />
+      case 'transferencia':
+        return <ArrowUpIcon size="md" className="text-red-600 dark:text-red-500" />
+      default:
+        return <CreditCardIcon size="md" className="text-black dark:text-brand-400" />
+    }
   }
 
-  const getTipoText = (tipo: string) => {
-    return tipo === 'saque' ? 'Saque MBway' : 'Solicitação de Crédito'
+  const getTipoText = (tipo: string, telefone?: string) => {
+    // Detecta transferências antigas pelo campo telefone
+    if (tipo === 'saque' && telefone?.includes('Transferência X88') || telefone?.startsWith('ID:')) {
+      return 'Transferência X88'
+    }
+    
+    switch (tipo) {
+      case 'saque':
+        return 'Saque MBway'
+      case 'transferencia':
+        return 'Transferência X88'
+      default:
+        return 'Solicitação de Crédito'
+    }
   }
 
   const formatDate = (dateString: string) => {
@@ -88,26 +110,32 @@ const MinhasTransacoes = ({ transacoes }: MinhasTransacoesProps) => {
               <div className="flex items-start gap-3">
                 {/* Ícone do Tipo */}
                 <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
-                  transacao.tipo === 'saque' 
+                  (transacao.tipo === 'transferencia' || (transacao.tipo === 'saque' && (transacao.telefone?.includes('Transferência X88') || transacao.telefone?.startsWith('ID:'))))
+                    ? 'bg-red-100 dark:bg-red-950'
+                    : transacao.tipo === 'saque' 
                     ? 'bg-brand-100 dark:bg-brand-950' 
                     : 'bg-neutral-100 dark:bg-neutral-800'
                 }`}>
-                  {getTipoIcon(transacao.tipo)}
+                  {getTipoIcon(transacao.tipo, transacao.telefone)}
                 </div>
 
                 {/* Conteúdo */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between mb-1">
                     <p className="font-semibold text-black dark:text-white text-base">
-                      {getTipoText(transacao.tipo)}
+                      {getTipoText(transacao.tipo, transacao.telefone)}
                     </p>
                     <span className={`status-${transacao.status} text-xs`}>
                       {getStatusText(transacao.status)}
                     </span>
                   </div>
 
-                  <p className="text-brand-600 dark:text-brand-500 font-bold text-lg mb-1">
-                    {transacao.valor.toLocaleString('pt-PT')} X88
+                  <p className={`font-bold text-lg mb-1 ${
+                    (transacao.tipo === 'transferencia' || (transacao.tipo === 'saque' && (transacao.telefone?.includes('Transferência X88') || transacao.telefone?.startsWith('ID:'))))
+                      ? 'text-red-600 dark:text-red-500' 
+                      : 'text-brand-600 dark:text-brand-500'
+                  }`}>
+                    {(transacao.tipo === 'transferencia' || (transacao.tipo === 'saque' && (transacao.telefone?.includes('Transferência X88') || transacao.telefone?.startsWith('ID:')))) ? '-' : ''}{transacao.valor.toLocaleString('pt-PT')} X88
                   </p>
                   
                   {transacao.valorEuro && (
@@ -116,7 +144,14 @@ const MinhasTransacoes = ({ transacoes }: MinhasTransacoesProps) => {
                     </p>
                   )}
 
-                  {transacao.telefone && (
+                  {transacao.tipo === 'transferencia' && transacao.destinatarioId && (
+                    <p className="text-neutral-500 dark:text-neutral-400 text-xs flex items-center gap-1">
+                      <span>👤</span>
+                      <span>Para: {transacao.destinatarioNome || 'Usuário'} (ID: {transacao.destinatarioId})</span>
+                    </p>
+                  )}
+
+                  {transacao.telefone && transacao.tipo !== 'transferencia' && (
                     <p className="text-neutral-500 dark:text-neutral-400 text-xs flex items-center gap-1">
                       <span>📱</span>
                       <span>{transacao.telefone}</span>

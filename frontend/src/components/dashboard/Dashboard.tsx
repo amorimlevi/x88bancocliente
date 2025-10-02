@@ -10,7 +10,7 @@ import { DadosUsuario } from '../auth/Cadastro'
 
 interface Transacao {
   id: string
-  tipo: 'saque' | 'credito'
+  tipo: 'saque' | 'credito' | 'transferencia'
   valor: number
   valorEuro?: number
   telefone?: string
@@ -22,6 +22,8 @@ interface Transacao {
   valorTotal?: number
   valorParcela?: number
   juros?: number
+  destinatarioId?: string
+  destinatarioNome?: string
 }
 
 interface DashboardProps {
@@ -36,6 +38,10 @@ interface DashboardProps {
 const Dashboard = ({ onLogout, dadosUsuario, userId = '0001', saldoInicial, creditoInicial, isNewAccount = false }: DashboardProps) => {
   const [paginaAtual, setPaginaAtual] = useState('inicio')
   const [paginaAnterior, setPaginaAnterior] = useState<string | null>(null)
+
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [paginaAtual])
   
   // Dados do usuário - se for nova conta, começa zerado
   const [saldoX88, setSaldoX88] = useState(saldoInicial ?? 5000)
@@ -160,14 +166,16 @@ const Dashboard = ({ onLogout, dadosUsuario, userId = '0001', saldoInicial, cred
     setPaginaAtual('inicio')
   }
 
-  const handleTransferenciaX88 = (destinatarioId: string, valor: number) => {
+  const handleTransferenciaX88 = (destinatarioId: string, valor: number, destinatarioNome?: string) => {
     const novaTransacao: Transacao = {
       id: Date.now().toString(),
-      tipo: 'saque',
+      tipo: 'transferencia',
       valor,
-      telefone: `Transferência X88 - ID: ${destinatarioId}`,
+      telefone: `ID: ${destinatarioId}`,
       data: new Date().toISOString().split('T')[0],
-      status: 'aprovado'
+      status: 'aprovado',
+      destinatarioId,
+      destinatarioNome
     }
     setTransacoes([novaTransacao, ...transacoes])
     setSaldoX88(saldoX88 - valor)

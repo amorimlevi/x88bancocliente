@@ -85,7 +85,7 @@ const HomePage = ({
         {/* Card Branco - Crédito Disponível */}
         <div className="mb-3">
           <button
-            onClick={() => onNavigate('credito')}
+            onClick={() => onNavigate('sacar')}
             className="w-full bg-white dark:bg-neutral-900 rounded-2xl p-5 shadow-sm text-center hover:shadow-md transition-shadow border border-neutral-100 dark:border-neutral-800"
           >
             <p className="text-dark black-500 dark :text-neutral-400 text-sm mb-2">

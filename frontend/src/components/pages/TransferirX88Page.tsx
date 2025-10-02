@@ -3,7 +3,7 @@ import { WalletIcon, UserPlusIcon } from '../ui/Icons'
 
 interface TransferirX88PageProps {
   saldoDisponivel: number
-  onSubmit: (destinatarioId: string, valor: number) => void
+  onSubmit: (destinatarioId: string, valor: number, destinatarioNome?: string) => void
   userId?: string
 }
 
@@ -59,7 +59,7 @@ const TransferirX88Page = ({ saldoDisponivel, onSubmit, userId = '0001' }: Trans
         alert('Saldo insuficiente!')
         return
       }
-      onSubmit(destinatarioId, Number(valorX88))
+      onSubmit(destinatarioId, Number(valorX88), usuarioDestinatario?.nome)
       setMensagemSucesso(true)
       setTimeout(() => setMensagemSucesso(false), 3000)
       setDestinatarioId('')

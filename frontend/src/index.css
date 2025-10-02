@@ -108,6 +108,17 @@
     @apply bg-white dark:bg-gray-800 border border-neutral-200 dark:border-gray-600 text-black dark:text-white px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-brand-500 focus:border-black dark:focus:border-brand-500 transition-all duration-200;
   }
 
+  /* Remove setas dos inputs de número */
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  input[type="number"] {
+    -moz-appearance: textfield;
+  }
+
   /* Professional Typography */
   .heading-1 {
     @apply text-3xl md:text-4xl font-bold text-black dark:text-white;

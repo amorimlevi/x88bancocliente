@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { UserIcon, EyeIcon, EyeOffIcon } from '../ui/Icons'
 import { ThemeToggle } from '../ui/ThemeToggle'
+import RecuperarSenha from './RecuperarSenha'
 
 interface LoginProps {
   onLogin: (email: string) => void
@@ -11,11 +12,17 @@ const Login = ({ onLogin, onMostrarCadastro }: LoginProps) => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
+  const [manterConectado, setManterConectado] = useState(false)
+  const [mostrarRecuperar, setMostrarRecuperar] = useState(false)
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     // Aqui implementaremos a autenticação real
     onLogin(email)
+  }
+
+  if (mostrarRecuperar) {
+    return <RecuperarSenha onVoltar={() => setMostrarRecuperar(false)} />
   }
 
   return (
@@ -82,6 +89,20 @@ const Login = ({ onLogin, onMostrarCadastro }: LoginProps) => {
               </div>
             </div>
 
+            {/* Manter Conectado */}
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                id="manterConectado"
+                checked={manterConectado}
+                onChange={(e) => setManterConectado(e.target.checked)}
+                className="w-4 h-4 text-brand-600 border-neutral-300 rounded focus:ring-brand-500 dark:border-neutral-700 dark:bg-neutral-800"
+              />
+              <label htmlFor="manterConectado" className="ml-2 text-sm text-light-text-primary dark:text-dark-text-primary">
+                Mantenha-me conectado
+              </label>
+            </div>
+
             {/* Login Button */}
             <button
               type="submit"
@@ -95,9 +116,13 @@ const Login = ({ onLogin, onMostrarCadastro }: LoginProps) => {
           <div className="mt-6 text-center space-y-3">
             <p className="text-sm text-body">
               Esqueceu a sua palavra-passe?{' '}
-              <a href="#" className="text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-brand-300 font-medium transition-colors">
+              <button 
+                type="button"
+                onClick={() => setMostrarRecuperar(true)}
+                className="text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-brand-300 font-medium transition-colors"
+              >
                 Recuperar
-              </a>
+              </button>
             </p>
           </div>
         </div>

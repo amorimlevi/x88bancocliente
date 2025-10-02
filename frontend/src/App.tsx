@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { ThemeProvider } from './contexts/ThemeContext'
 import Login from './components/auth/Login'
 import Cadastro, { DadosUsuario } from './components/auth/Cadastro'
@@ -8,6 +8,10 @@ import './index.css'
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [mostrarCadastro, setMostrarCadastro] = useState(false)
+
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [isAuthenticated, mostrarCadastro])
   const [dadosUsuario, setDadosUsuario] = useState<DadosUsuario | null>(null)
   const [userId, setUserId] = useState<string>('')
   const [saldoInicial, setSaldoInicial] = useState<number | undefined>(undefined)
