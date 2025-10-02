@@ -1,0 +1,53 @@
+{
+  "packageId": "com.x88bank.app",
+  "name": "X88 Bank",
+  "launcherName": "X88 Bank",
+  "display": "standalone",
+  "backgroundColor": "#000000",
+  "themeColor": "#15FF5D",
+  "navigationColor": "#000000",
+  "navigationColorDark": "#000000",
+  "navigationDividerColor": "#000000",
+  "navigationDividerColorDark": "#000000",
+  "orientation": "portrait",
+  "startUrl": "/",
+  "iconUrl": "https://seudominio.com/pwa-512x512.png",
+  "maskableIconUrl": "https://seudominio.com/pwa-512x512.png",
+  "monochromeIconUrl": "https://seudominio.com/pwa-512x512.png",
+  "splashScreenFadeOutDuration": 300,
+  "signingKey": {
+    "path": "./android.keystore",
+    "alias": "x88bank"
+  },
+  "appVersionName": "1.0.0",
+  "appVersionCode": 1,
+  "shortcuts": [
+    {
+      "name": "Saldo",
+      "short_name": "Saldo",
+      "url": "/dashboard",
+      "icon": "https://seudominio.com/pwa-192x192.png"
+    },
+    {
+      "name": "Transferir",
+      "short_name": "Transferir",
+      "url": "/transferir",
+      "icon": "https://seudominio.com/pwa-192x192.png"
+    }
+  ],
+  "features": {
+    "locationDelegation": {
+      "enabled": false
+    },
+    "playBilling": {
+      "enabled": false
+    }
+  },
+  "enableNotifications": true,
+  "minSdkVersion": 21,
+  "targetSdkVersion": 33,
+  "fallbackType": "customtabs",
+  "enableSiteSettingsShortcut": true,
+  "isChromeOSOnly": false,
+  "includeNotificationDelegation": true
+}

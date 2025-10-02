@@ -7,7 +7,15 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "start": "vite"
+    "start": "vite",
+    "android:init": "npx @bubblewrap/cli init --manifest=https://seudominio.com/manifest.json",
+    "android:build": "npx @bubblewrap/cli build",
+    "android:install": "npx @bubblewrap/cli install",
+    "android:update": "npx @bubblewrap/cli update",
+    "capacitor:init": "npx cap init",
+    "capacitor:add-android": "npx cap add android",
+    "capacitor:sync": "npm run build && npx cap sync",
+    "capacitor:open": "npx cap open android"
   },
   "dependencies": {
     "@tanstack/react-query": "^4.29.7",

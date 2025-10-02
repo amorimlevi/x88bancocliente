@@ -9,10 +9,15 @@
   "background_color": "#000000",
   "theme_color": "#15FF5D",
   "orientation": "portrait-primary",
-  "categories": ["finance", "banking"],
+  "categories": ["finance", "banking", "productivity"],
   "lang": "pt-BR",
   "dir": "ltr",
   "prefer_related_applications": false,
+  "related_applications": [{
+    "platform": "play",
+    "id": "com.x88bank.app",
+    "url": "https://play.google.com/store/apps/details?id=com.x88bank.app"
+  }],
   "icons": [
     {
       "src": "/pwa-64x64.png",

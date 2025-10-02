@@ -41,8 +41,8 @@ const Login = ({ onLogin, onMostrarCadastro }: LoginProps) => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-8" style={{ backgroundColor: '#15FF5D' }}>
-      <div className="absolute top-6 right-6">
+    <div className="page-container flex items-center justify-center px-4 py-8" style={{ backgroundColor: '#15FF5D' }}>
+      <div className="absolute right-6" style={{ top: 'max(24px, calc(env(safe-area-inset-top) + 8px))' }}>
         <ThemeToggle customClassName="p-3 rounded-xl hover:opacity-80 transition-opacity" />
       </div>
       
