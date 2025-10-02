@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { UserIcon, EyeIcon, EyeOffIcon } from '../ui/Icons'
 import { ThemeToggle } from '../ui/ThemeToggle'
 import RecuperarSenha from './RecuperarSenha'
@@ -15,6 +15,21 @@ const Login = ({ onLogin, onMostrarCadastro }: LoginProps) => {
   const [manterConectado, setManterConectado] = useState(false)
   const [mostrarRecuperar, setMostrarRecuperar] = useState(false)
 
+  useEffect(() => {
+    // Define a cor da status bar quando o componente monta
+    const metaThemeColor = document.querySelector('meta[name="theme-color"]')
+    if (metaThemeColor) {
+      metaThemeColor.setAttribute('content', '#15FF5D')
+    }
+
+    // Restaura a cor original quando o componente desmonta
+    return () => {
+      if (metaThemeColor) {
+        metaThemeColor.setAttribute('content', '#ffffff')
+      }
+    }
+  }, [])
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     // Aqui implementaremos a autenticação real
@@ -26,20 +41,19 @@ const Login = ({ onLogin, onMostrarCadastro }: LoginProps) => {
   }
 
   return (
-    <div className="container-app flex items-center justify-center px-4 py-8">
+    <div className="min-h-screen flex items-center justify-center px-4 py-8" style={{ backgroundColor: '#15FF5D' }}>
       <div className="absolute top-6 right-6">
-        <ThemeToggle />
+        <ThemeToggle customClassName="p-3 rounded-xl hover:opacity-80 transition-opacity" />
       </div>
       
       <div className="max-w-md w-full">
         {/* Logo/Header */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center mb-6">
+        <div className="text-center mb-4">
+          <div className="inline-flex items-center justify-center mb-4">
             <img 
-              src="https://res.cloudinary.com/dxchbdcai/image/upload/v1759200105/logotipo_X88_green.fw_itwz41.png" 
+              src="https://res.cloudinary.com/dxchbdcai/image/upload/v1759251700/LOGOTIPO_X88_BLACK_PNG.fw_zpepci.png" 
               alt="X88 Logo"
-              className="w-40 h-40 object-contain"
-            />
+              className="w-60 h- object-contain"            />
           </div>
           <h1 className="heading-1 mb-2"></h1>
           <p className="text-body text-lg"></p>
@@ -131,17 +145,18 @@ const Login = ({ onLogin, onMostrarCadastro }: LoginProps) => {
         <div className="mt-6">
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-neutral-200 dark:border-neutral-800"></div>
+              <div className="w-full border-t border-black/20"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-4 bg-white dark:bg-black text-neutral-500 dark:text-neutral-400">ou</span>
+              <span className="px-4 text-black font-semibold" style={{ backgroundColor: '#15FF5D' }}>ou</span>
             </div>
           </div>
           
           <button
             type="button"
             onClick={onMostrarCadastro}
-            className="w-full mt-6 py-3 px-6 rounded-2xl font-semibold border-2 border-brand-500 text-brand-600 dark:text-brand-400 hover:bg-brand-50 dark:hover:bg-brand-900/20 transition-colors relative z-10 touch-manipulation"
+            className="w-full mt-6 py-3 px-6 rounded-2xl font-semibold border-2 text-black hover:opacity-80 transition-opacity relative z-10 touch-manipulation"
+            style={{ borderColor: '#000', backgroundColor: 'transparent' }}
           >
             Criar Nova Conta
           </button>

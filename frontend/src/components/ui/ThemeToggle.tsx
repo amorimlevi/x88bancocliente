@@ -1,13 +1,17 @@
 import { Moon, Sun } from 'lucide-react'
 import { useTheme } from '../../contexts/ThemeContext'
 
-export const ThemeToggle = () => {
+interface ThemeToggleProps {
+  customClassName?: string
+}
+
+export const ThemeToggle = ({ customClassName }: ThemeToggleProps = {}) => {
   const { theme, toggleTheme } = useTheme()
 
   return (
     <button
       onClick={toggleTheme}
-      className="p-2 rounded-lg bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
+      className={customClassName || "p-2 rounded-lg bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"}
       aria-label="Toggle theme"
     >
       {theme === 'light' ? (
