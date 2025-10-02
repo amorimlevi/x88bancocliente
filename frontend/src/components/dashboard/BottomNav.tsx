@@ -29,8 +29,8 @@ const BottomNav = ({ paginaAtual, onNavigate }: BottomNavProps) => {
   ]
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-white dark:bg-neutral-900 border-t border-neutral-200 dark:border-neutral-800 z-50">
-      <div className="max-w-md mx-auto flex items-center justify-around px-2" style={{ paddingTop: '0.75rem', paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}>
+    <nav className="bg-white dark:bg-neutral-900 border-t border-neutral-200 dark:border-neutral-800" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+      <div className="max-w-md mx-auto flex items-center justify-around px-2 py-3">
         {menuItems.map((item) => {
           const Icon = item.icon
           const isActive = paginaAtual === item.id
