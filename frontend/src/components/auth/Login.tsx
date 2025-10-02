@@ -116,7 +116,7 @@ const Login = ({ onLogin, onMostrarCadastro }: LoginProps) => {
           <button
             type="button"
             onClick={onMostrarCadastro}
-            className="w-full mt-6 py-3 px-6 rounded-2xl font-semibold border-2 border-brand-500 text-brand-600 dark:text-brand-400 hover:bg-brand-50 dark:hover:bg-brand-900/20 transition-colors"
+            className="w-full mt-6 py-3 px-6 rounded-2xl font-semibold border-2 border-brand-500 text-brand-600 dark:text-brand-400 hover:bg-brand-50 dark:hover:bg-brand-900/20 transition-colors relative z-10 touch-manipulation"
           >
             Criar Nova Conta
           </button>
