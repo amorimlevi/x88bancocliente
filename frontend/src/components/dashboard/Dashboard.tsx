@@ -5,6 +5,7 @@ import HomePage from '../pages/HomePage'
 import SacarPage from '../pages/SacarPage'
 import CreditoPage from '../pages/CreditoPage'
 import HistoricoPage from '../pages/HistoricoPage'
+import PerfilPage from '../pages/PerfilPage'
 
 interface Transacao {
   id: string
@@ -22,13 +23,17 @@ interface Transacao {
   juros?: number
 }
 
-const Dashboard = () => {
+interface DashboardProps {
+  onLogout: () => void
+}
+
+const Dashboard = ({ onLogout }: DashboardProps) => {
   const [paginaAtual, setPaginaAtual] = useState('inicio')
   
   // Dados fictícios do usuário
   const [saldoX88, setSaldoX88] = useState(1250)
   const [creditoDisponivel] = useState(5000)
-  const taxaConversao = 1.5 // 1 X88 = 1.5 €
+  const taxaConversao = 1.0 // 1 X88 = 1 €
   
   const [transacoes, setTransacoes] = useState<Transacao[]>([
     {
@@ -138,6 +143,8 @@ const Dashboard = () => {
         return <DepositarPage onVoltar={() => setPaginaAtual('inicio')} />
       case 'historico':
         return <HistoricoPage transacoes={transacoes} />
+      case 'perfil':
+        return <PerfilPage onLogout={onLogout} />
       default:
         return null
     }

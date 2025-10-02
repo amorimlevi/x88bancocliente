@@ -4,9 +4,10 @@ import { ThemeToggle } from '../ui/ThemeToggle'
 
 interface LoginProps {
   onLogin: (email: string) => void
+  onMostrarCadastro: () => void
 }
 
-const Login = ({ onLogin }: LoginProps) => {
+const Login = ({ onLogin, onMostrarCadastro }: LoginProps) => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -96,7 +97,7 @@ const Login = ({ onLogin }: LoginProps) => {
             </button>
           </form>
 
-          <div className="mt-6 text-center">
+          <div className="mt-6 text-center space-y-3">
             <p className="text-sm text-body">
               Esqueceu a sua palavra-passe?{' '}
               <a href="#" className="text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-brand-300 font-medium transition-colors">
@@ -104,6 +105,26 @@ const Login = ({ onLogin }: LoginProps) => {
               </a>
             </p>
           </div>
+        </div>
+
+        {/* Criar Conta */}
+        <div className="mt-6">
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-neutral-200 dark:border-neutral-800"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-4 bg-white dark:bg-black text-neutral-500 dark:text-neutral-400">ou</span>
+            </div>
+          </div>
+          
+          <button
+            type="button"
+            onClick={onMostrarCadastro}
+            className="w-full mt-6 py-3 px-6 rounded-2xl font-semibold border-2 border-brand-500 text-brand-600 dark:text-brand-400 hover:bg-brand-50 dark:hover:bg-brand-900/20 transition-colors"
+          >
+            Criar Nova Conta
+          </button>
         </div>
       </div>
     </div>

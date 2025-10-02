@@ -1,4 +1,4 @@
-import { HomeIcon, ArrowDownIcon, CreditCardIcon, HistoryIcon } from '../ui/Icons'
+import { HomeIcon, ArrowDownIcon, CreditCardIcon, HistoryIcon, UserIcon } from '../ui/Icons'
 
 interface BottomNavProps {
   paginaAtual: string
@@ -8,9 +8,10 @@ interface BottomNavProps {
 const BottomNav = ({ paginaAtual, onNavigate }: BottomNavProps) => {
   const menuItems = [
     { id: 'inicio', icon: HomeIcon, label: 'Início' },
-    { id: 'sacar', icon: ArrowDownIcon, label: 'Sacar' },
+    { id: 'sacar', icon: ArrowDownIcon, label: 'X88' },
     { id: 'credito', icon: CreditCardIcon, label: 'Crédito' },
     { id: 'historico', icon: HistoryIcon, label: 'Histórico' },
+    { id: 'perfil', icon: UserIcon, label: 'Perfil' },
   ]
 
   return (
