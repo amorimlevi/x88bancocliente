@@ -73,7 +73,7 @@ const PerfilPage = ({ onLogout, dadosUsuario, userId = '0001', dadosBancarios, o
   }
 
   return (
-    <div className="min-h-screen bg-white dark:bg-black pb-24">
+    <div className="min-h-screen bg-white dark:bg-black pb-24 scroll-container-ios">
       <div className="max-w-md mx-auto">
         {/* Header */}
         <div className="bg-brand-500 px-4 pt-8 pb-20 rounded-b-3xl">

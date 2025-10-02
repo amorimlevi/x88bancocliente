@@ -7,10 +7,21 @@
   html {
     font-family: 'Inter', system-ui, sans-serif;
     scroll-behavior: smooth;
+    /* Altura fixa para iOS */
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
   }
   
   body {
     @apply bg-white dark:bg-black text-light-text-primary dark:text-dark-text-primary transition-colors;
+    /* Altura fixa para iOS */
+    height: 100%;
+    width: 100%;
+    overflow: auto;
+    /* Desabilita o bounce scroll do iOS */
+    overscroll-behavior: none;
+    -webkit-overflow-scrolling: touch;
   }
   
   /* iOS Safe Area - apenas para dispositivos iOS */
@@ -25,6 +36,11 @@
 
   * {
     @apply border-light-border dark:border-dark-border;
+  }
+  
+  /* Remove bounce scroll no iOS */
+  * {
+    -webkit-overflow-scrolling: touch;
   }
 }
 
@@ -153,6 +169,37 @@
   /* Professional Layout */
   .container-app {
     @apply min-h-screen bg-white dark:bg-black transition-colors;
+  }
+  
+  /* iOS Safe Area Container */
+  @supports (-webkit-touch-callout: none) {
+    .ios-safe-top {
+      padding-top: max(1.5rem, calc(env(safe-area-inset-top) + 1rem));
+    }
+    
+    .ios-safe-bottom {
+      padding-bottom: max(1.5rem, calc(env(safe-area-inset-bottom) + 1rem));
+    }
+    
+    /* Container para telas iOS - Scroll otimizado */
+    .login-container-ios,
+    .page-container-ios {
+      min-height: -webkit-fill-available !important;
+      height: 100vh;
+      height: -webkit-fill-available;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior-y: none;
+    }
+    
+    /* Scroll container iOS para páginas internas */
+    .scroll-container-ios {
+      overflow-y: auto;
+      overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior-y: contain;
+      height: 100%;
+    }
   }
 
   /* Status indicators */
