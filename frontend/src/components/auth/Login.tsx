@@ -27,20 +27,15 @@ const Login = ({ onLogin, onMostrarCadastro }: LoginProps) => {
       <div className="max-w-md w-full">
         {/* Logo/Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-brand-500 to-brand-600 rounded-2xl mb-6 shadow-soft">
-            <svg 
-              className="w-10 h-10 text-white" 
-              viewBox="0 0 24 24" 
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <rect x="2" y="5" width="20" height="14" rx="2"/>
-              <line x1="2" y1="10" x2="22" y2="10"/>
-            </svg>
+          <div className="inline-flex items-center justify-center mb-6">
+            <img 
+              src="https://res.cloudinary.com/dxchbdcai/image/upload/v1759200105/logotipo_X88_green.fw_itwz41.png" 
+              alt="X88 Logo"
+              className="w-40 h-40 object-contain"
+            />
           </div>
-          <h1 className="heading-1 mb-2">X88 Colaborador</h1>
-          <p className="text-body text-lg">Solicite seus pagamentos de forma simples</p>
+          <h1 className="heading-1 mb-2"></h1>
+          <p className="text-body text-lg"></p>
         </div>
 
         {/* Login Form */}

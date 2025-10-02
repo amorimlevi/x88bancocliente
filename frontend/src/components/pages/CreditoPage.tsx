@@ -46,21 +46,18 @@ const CreditoPage = ({ creditoDisponivel, saldoX88, onSubmit }: CreditoPageProps
     <div className="p-4 pb-24 overflow-y-auto">
       <div className="max-w-md mx-auto">
         {/* Header */}
-        <div className="mb-6">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-12 h-12 bg-brand-500 rounded-2xl flex items-center justify-center">
-              <CreditCardIcon size="md" className="text-white" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold text-black dark:text-white">Solicitar Empréstimo</h1>
-              <p className="text-sm text-neutral-600 dark:text-neutral-400">Crédito X88</p>
-            </div>
+        <div className="mb-3 flex items-center justify-between">
+          <div className="w-12 h-12 flex items-center justify-center">
+            <svg viewBox="0 0 24 24" fill="currentColor" className="w-12 h-12" style={{ color: '#15FF5D' }}>
+              <path d="M15 18.5c-2.51 0-4.68-1.42-5.76-3.5H15v-2H8.58c-.05-.33-.08-.66-.08-1s.03-.67.08-1H15V9H9.24C10.32 6.92 12.5 5.5 15 5.5c1.61 0 3.09.59 4.23 1.57L21 5.3C19.41 3.87 17.3 3 15 3c-3.92 0-7.24 2.51-8.48 6H3v2h3.06c-.04.33-.06.66-.06 1 0 .34.02.67.06 1H3v2h3.52c1.24 3.49 4.56 6 8.48 6 2.31 0 4.41-.87 6-2.3l-1.78-1.77c-1.13.98-2.6 1.57-4.22 1.57z"/>
+            </svg>
           </div>
+          <h1 className="text-2xl font-bold text-black dark:text-white">Empréstimo</h1>
         </div>
 
         {/* Card Verde - Saldo Disponível */}
         <div className="mb-3">
-          <div className="rounded-2xl p-6 shadow-md" style={{ backgroundColor: '#15FF5D', borderColor: '#15FF5D' }}>
+          <div className="rounded-2xl p-6 shadow-md relative" style={{ backgroundColor: '#15FF5D', borderColor: '#15FF5D' }}>
             <div className="flex items-center justify-between mb-4">
               <p className="text-dark black text-4x1 font-medium">Saldo Disponível</p>
               <WalletIcon size="sm" className="text-dark black" />
@@ -68,11 +65,19 @@ const CreditoPage = ({ creditoDisponivel, saldoX88, onSubmit }: CreditoPageProps
             
             <div className="mb-3">
               <p className="text-dark black text-5xl font-bold leading-none mb-2">
-                {saldoX88.toLocaleString('pt-PT')} x88
+                {saldoX88.toLocaleString('pt-PT')} 
               </p>
               <p className="text-dark black/90 text-lg">
                
               </p>
+            </div>
+
+            <div className="absolute bottom-4 right-4">
+              <img 
+                src="https://res.cloudinary.com/dxchbdcai/image/upload/v1759251700/LOGOTIPO_X88_BLACK_PNG.fw_zpepci.png" 
+                alt="X88"
+                className="w-14 h-9 object-contain"
+              />
             </div>
           </div>
         </div>

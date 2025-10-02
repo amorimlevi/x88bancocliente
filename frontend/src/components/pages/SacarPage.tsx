@@ -26,20 +26,17 @@ const SacarPage = ({ saldoDisponivel, creditoDisponivel, taxaConversao, onSubmit
     <div className="p-4 pb-24">
       <div className="max-w-md mx-auto">
         {/* Header */}
-        <div className="mb-6">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-12 h-12 bg-brand-500 rounded-2xl flex items-center justify-center">
-              <ArrowDownIcon size="md" className="text-white" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold text-black dark:text-white">X88</h1>
-              <p className="text-sm text-neutral-600 dark:text-neutral-400"></p>
-            </div>
-          </div>
+        <div className="mb-3 flex items-center justify-between">
+          <img 
+            src="https://res.cloudinary.com/dxchbdcai/image/upload/v1759416402/Design_sem_nome_9_z13spl.png" 
+            alt="X88"
+            className="w-13 h-12 object-contain"
+          />
+          <h1 className="text-2xl font-bold text-black dark:text-white">X88</h1>
         </div>
 
         {/* Crédito Disponível */}
-        <div className="rounded-2xl p-6 shadow-md mb-3" style={{ backgroundColor: '#FF9500', borderColor: '#FF9500' }}>
+        <div className="rounded-2xl p-6 shadow-md mb-3 relative" style={{ backgroundColor: '#FFF700', borderColor: '#FFF700' }}>
           <div className="flex items-center justify-between mb-4">
             <p className="text-dark black text-4x1 font-medium">Crédito Disponível</p>
             <WalletIcon size="sm" className="text-black" />
@@ -47,11 +44,19 @@ const SacarPage = ({ saldoDisponivel, creditoDisponivel, taxaConversao, onSubmit
           
           <div className="mb-3">
             <p className="text-black text-5xl font-bold leading-none mb-2">
-              {creditoDisponivel.toLocaleString('pt-PT')} X88
+              {creditoDisponivel.toLocaleString('pt-PT')} 
             </p>
             <p className="text-black/90 text-lg">
-              Disponível para solicitar
+              
             </p>
+          </div>
+
+          <div className="absolute bottom-3 right-4">
+            <img 
+              src="https://res.cloudinary.com/dxchbdcai/image/upload/v1759251700/LOGOTIPO_X88_BLACK_PNG.fw_zpepci.png" 
+              alt="X88"
+              className="w-14 h-9 object-contain"
+            />
           </div>
         </div>
 
