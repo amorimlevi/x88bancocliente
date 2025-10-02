@@ -3,6 +3,7 @@ import { ThemeProvider } from './contexts/ThemeContext'
 import Login from './components/auth/Login'
 import Cadastro, { DadosUsuario } from './components/auth/Cadastro'
 import Dashboard from './components/dashboard/Dashboard'
+import { PWAInstallPrompt } from './components/PWAInstallPrompt'
 import './index.css'
 
 function App() {
