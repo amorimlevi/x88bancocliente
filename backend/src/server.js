@@ -131,6 +131,18 @@ app.get('/api/usuario/:id', (req, res) => {
 // Armazena transações de transferências (em produção, usar banco de dados)
 const transferencias = []
 
+// Armazena pagamentos pendentes de aprovação
+const pagamentosPendentes = []
+
+// Dados bancários do gestor
+const dadosBancariosGestor = {
+  nome: 'X88 Bank Gestor',
+  banco: 'Banco Português',
+  iban: 'PT50 0000 0000 0000 0000 0000 1',
+  nib: '0000 0000 0000 0000 0000 01',
+  swift: 'BPTPPTPL'
+}
+
 // Rota de transações (mock)
 app.get('/api/transacoes', (req, res) => {
   const userId = req.query.userId || req.headers.authorization?.replace('Bearer ', '')
@@ -229,6 +241,30 @@ app.post('/api/solicitar-credito', (req, res) => {
   }
 })
 
+// Solicitar X88 (compra de crédito)
+app.post('/api/solicitar-x88', (req, res) => {
+  const { valorX88 } = req.body
+  
+  if (valorX88) {
+    res.json({
+      success: true,
+      transacao: {
+        id: Date.now().toString(),
+        tipo: 'x88',
+        valor: valorX88,
+        data: new Date().toISOString().split('T')[0],
+        status: 'pendente'
+      },
+      message: 'Solicitação de X88 enviada! Aguarde aprovação.'
+    })
+  } else {
+    res.status(400).json({
+      success: false,
+      message: 'Valor é obrigatório'
+    })
+  }
+})
+
 // Enviar x88 para outro usuário pelo ID
 app.post('/api/enviar-x88', (req, res) => {
   const { destinatarioId, valor, remetenteId, remetenteNome } = req.body
@@ -263,6 +299,113 @@ app.post('/api/enviar-x88', (req, res) => {
     success: true,
     transferencia,
     message: `${valor} X88 enviado com sucesso para o usuário ${destinatarioId}!`
+  })
+})
+
+// Buscar dados bancários do gestor
+app.get('/api/dados-bancarios-gestor', (req, res) => {
+  res.json({
+    success: true,
+    dadosBancarios: dadosBancariosGestor
+  })
+})
+
+// Solicitar pagamento de parcela (cria um pagamento pendente)
+app.post('/api/solicitar-pagamento-parcela', (req, res) => {
+  const { emprestimoId, valorParcela, userId, userName } = req.body
+  
+  if (!emprestimoId || !valorParcela || !userId) {
+    return res.status(400).json({
+      success: false,
+      message: 'Dados incompletos'
+    })
+  }
+
+  const pagamento = {
+    id: Date.now().toString(),
+    emprestimoId,
+    valorParcela,
+    userId,
+    userName: userName || 'Usuário',
+    data: new Date().toISOString(),
+    status: 'pendente'
+  }
+
+  pagamentosPendentes.push(pagamento)
+
+  res.json({
+    success: true,
+    pagamento,
+    message: 'Pagamento solicitado. Aguardando aprovação do gestor.'
+  })
+})
+
+// Listar pagamentos pendentes (para o gestor)
+app.get('/api/pagamentos-pendentes', (req, res) => {
+  res.json({
+    success: true,
+    pagamentos: pagamentosPendentes.filter(p => p.status === 'pendente')
+  })
+})
+
+// Aprovar pagamento de parcela (gestor)
+app.post('/api/aprovar-pagamento-parcela', (req, res) => {
+  const { pagamentoId } = req.body
+  
+  if (!pagamentoId) {
+    return res.status(400).json({
+      success: false,
+      message: 'ID do pagamento é obrigatório'
+    })
+  }
+
+  const pagamento = pagamentosPendentes.find(p => p.id === pagamentoId)
+  
+  if (!pagamento) {
+    return res.status(404).json({
+      success: false,
+      message: 'Pagamento não encontrado'
+    })
+  }
+
+  pagamento.status = 'aprovado'
+  pagamento.dataAprovacao = new Date().toISOString()
+
+  res.json({
+    success: true,
+    pagamento,
+    message: 'Pagamento aprovado com sucesso!'
+  })
+})
+
+// Rejeitar pagamento de parcela (gestor)
+app.post('/api/rejeitar-pagamento-parcela', (req, res) => {
+  const { pagamentoId, motivo } = req.body
+  
+  if (!pagamentoId) {
+    return res.status(400).json({
+      success: false,
+      message: 'ID do pagamento é obrigatório'
+    })
+  }
+
+  const pagamento = pagamentosPendentes.find(p => p.id === pagamentoId)
+  
+  if (!pagamento) {
+    return res.status(404).json({
+      success: false,
+      message: 'Pagamento não encontrado'
+    })
+  }
+
+  pagamento.status = 'rejeitado'
+  pagamento.dataRejeicao = new Date().toISOString()
+  pagamento.motivoRejeicao = motivo
+
+  res.json({
+    success: true,
+    pagamento,
+    message: 'Pagamento rejeitado.'
   })
 })
 

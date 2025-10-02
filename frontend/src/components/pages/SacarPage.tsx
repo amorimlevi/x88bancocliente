@@ -5,7 +5,7 @@ interface SacarPageProps {
   saldoDisponivel: number
   creditoDisponivel: number
   taxaConversao: number
-  onSubmit: (valorX88: number, telefone: string) => void
+  onSubmit: (valorX88: number, telefone?: string) => void
   userId?: string
   dadosBancariosCompletos: boolean
   onNavigate?: (pagina: string) => void
@@ -17,8 +17,9 @@ const SacarPage = ({ saldoDisponivel, creditoDisponivel, taxaConversao, onSubmit
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (valorX88 && telefone && Number(valorX88) > 0) {
-      onSubmit(Number(valorX88), telefone)
+    // Chama onSubmit apenas com o valor (sem telefone) para solicitar X88
+    if (valorX88 && Number(valorX88) > 0) {
+      onSubmit(Number(valorX88))
     }
   }
 

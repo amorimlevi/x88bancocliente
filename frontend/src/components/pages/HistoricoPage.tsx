@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import MinhasTransacoes from '../transacoes/MinhasTransacoes'
 import { HistoryIcon } from '../ui/Icons'
 
@@ -6,6 +7,31 @@ interface HistoricoPageProps {
 }
 
 const HistoricoPage = ({ transacoes }: HistoricoPageProps) => {
+  const [dataInicio, setDataInicio] = useState('')
+  const [dataFim, setDataFim] = useState('')
+
+  const transacoesFiltradas = transacoes.filter(transacao => {
+    if (!dataInicio && !dataFim) return true
+    
+    const dataTransacao = new Date(transacao.data)
+    const inicio = dataInicio ? new Date(dataInicio) : null
+    const fim = dataFim ? new Date(dataFim) : null
+
+    if (inicio && fim) {
+      return dataTransacao >= inicio && dataTransacao <= fim
+    } else if (inicio) {
+      return dataTransacao >= inicio
+    } else if (fim) {
+      return dataTransacao <= fim
+    }
+    return true
+  })
+
+  const limparFiltros = () => {
+    setDataInicio('')
+    setDataFim('')
+  }
+
   return (
     <div className="p-4 pb-24">
       <div className="max-w-md mx-auto">
@@ -19,8 +45,44 @@ const HistoricoPage = ({ transacoes }: HistoricoPageProps) => {
           <h1 className="text-2xl font-bold text-black dark:text-white">Histórico</h1>
         </div>
 
+        {/* Filtro de Data */}
+        <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-4 mb-4">
+          <h3 className="font-semibold text-black dark:text-white mb-3 flex items-center gap-2">
+            <span>📅</span>
+            Filtrar por período
+          </h3>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs text-neutral-600 dark:text-neutral-400 mb-1">Data inicial</label>
+              <input
+                type="date"
+                value={dataInicio}
+                onChange={(e) => setDataInicio(e.target.value)}
+                className="w-full px-3 py-2 rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-black dark:text-white text-sm"
+              />
+            </div>
+            <div>
+              <label className="block text-xs text-neutral-600 dark:text-neutral-400 mb-1">Data final</label>
+              <input
+                type="date"
+                value={dataFim}
+                onChange={(e) => setDataFim(e.target.value)}
+                className="w-full px-3 py-2 rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-black dark:text-white text-sm"
+              />
+            </div>
+          </div>
+          {(dataInicio || dataFim) && (
+            <button
+              onClick={limparFiltros}
+              className="mt-3 w-full py-2 px-4 rounded-xl bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-sm font-semibold hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
+            >
+              Limpar filtros
+            </button>
+          )}
+        </div>
+
         {/* Lista de Transações */}
-        <MinhasTransacoes transacoes={transacoes} />
+        <MinhasTransacoes transacoes={transacoesFiltradas} semLimite />
       </div>
     </div>
   )

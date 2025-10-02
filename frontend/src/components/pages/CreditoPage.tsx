@@ -1,19 +1,41 @@
 import { useState } from 'react'
 import { CreditCardIcon, WalletIcon } from '../ui/Icons'
 
+interface Transacao {
+  id: string
+  tipo: 'saque' | 'credito' | 'transferencia' | 'x88'
+  valor: number
+  motivo?: string
+  data: string
+  status: 'pendente' | 'aprovado' | 'negado'
+  parcelas?: number
+  periodo?: number
+  valorTotal?: number
+  valorParcela?: number
+  juros?: number
+  parcelasPagas?: number
+}
+
 interface CreditoPageProps {
   creditoDisponivel: number
   saldoX88: number
   onSubmit: (valor: number, motivo: string, parcelas: number, periodo: number, valorTotal: number, valorParcela: number) => void
+  transacoes?: Transacao[]
+  onPagarParcela?: (emprestimoId: string) => void
 }
 
-const CreditoPage = ({ creditoDisponivel, saldoX88, onSubmit }: CreditoPageProps) => {
+const CreditoPage = ({ creditoDisponivel, saldoX88, onSubmit, transacoes = [], onPagarParcela }: CreditoPageProps) => {
+  const [abaAtiva, setAbaAtiva] = useState<'solicitar' | 'meus'>('solicitar')
   const [valor, setValor] = useState('')
   const [motivo, setMotivo] = useState('')
   const [parcelas, setParcelas] = useState(1)
   const [periodo, setPeriodo] = useState(30)
   const [mostrarModalParcelas, setMostrarModalParcelas] = useState(false)
   const [mostrarModalMotivo, setMostrarModalMotivo] = useState(false)
+  const [mostrarModalPeriodo, setMostrarModalPeriodo] = useState(false)
+  const [mostrarModalPagamento, setMostrarModalPagamento] = useState(false)
+  const [emprestimoSelecionado, setEmprestimoSelecionado] = useState<Transacao | null>(null)
+  const [dadosBancarios, setDadosBancarios] = useState<any>(null)
 
   const calcularJuros = (numParcelas: number): number => {
     const tabelaJuros: { [key: number]: number } = {
@@ -28,7 +50,7 @@ const CreditoPage = ({ creditoDisponivel, saldoX88, onSubmit }: CreditoPageProps
   const valorJuros = valorNumerico * (jurosPercentual / 100)
   const valorTotal = valorNumerico + valorJuros
   const valorParcela = parcelas > 0 ? valorTotal / parcelas : 0
-  const dentroDoLimite = Number(valor) <= creditoDisponivel
+  const dentroDoLimite = Number(valor) <= saldoX88
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -55,6 +77,55 @@ const CreditoPage = ({ creditoDisponivel, saldoX88, onSubmit }: CreditoPageProps
     'Outros'
   ]
 
+  const meusEmprestimos = transacoes.filter(t => t.tipo === 'credito' && t.status === 'aprovado')
+
+  const handleAbrirModalPagamento = async (emprestimo: Transacao) => {
+    setEmprestimoSelecionado(emprestimo)
+    
+    // Buscar dados bancários do gestor
+    try {
+      const response = await fetch('http://localhost:3002/api/dados-bancarios-gestor')
+      const data = await response.json()
+      if (data.success) {
+        setDadosBancarios(data.dadosBancarios)
+      }
+    } catch (error) {
+      console.error('Erro ao buscar dados bancários:', error)
+    }
+    
+    setMostrarModalPagamento(true)
+  }
+
+  const handleConfirmarPagamento = async () => {
+    if (!emprestimoSelecionado) return
+    
+    try {
+      const response = await fetch('http://localhost:3002/api/solicitar-pagamento-parcela', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          emprestimoId: emprestimoSelecionado.id,
+          valorParcela: emprestimoSelecionado.valorParcela,
+          userId: '1', // Em produção, pegar do contexto do usuário
+          userName: 'Colaborador Teste'
+        })
+      })
+      
+      const data = await response.json()
+      
+      if (data.success) {
+        alert('Pagamento solicitado! Aguarde a aprovação do gestor.')
+        setMostrarModalPagamento(false)
+        setEmprestimoSelecionado(null)
+      }
+    } catch (error) {
+      console.error('Erro ao solicitar pagamento:', error)
+      alert('Erro ao solicitar pagamento. Tente novamente.')
+    }
+  }
+
   return (
     <div className="p-4 pb-24 overflow-y-auto">
       <div className="max-w-md mx-auto">
@@ -68,34 +139,60 @@ const CreditoPage = ({ creditoDisponivel, saldoX88, onSubmit }: CreditoPageProps
           <h1 className="text-2xl font-bold text-black dark:text-white">Empréstimo</h1>
         </div>
 
-        {/* Card Verde - Saldo Disponível */}
-        <div className="mb-3">
-          <div className="rounded-2xl p-6 shadow-md relative" style={{ backgroundColor: '#15FF5D', borderColor: '#15FF5D' }}>
-            <div className="flex items-center justify-between mb-4">
-              <p className="text-dark black text-4x1 font-medium">Saldo Disponível</p>
-              <WalletIcon size="sm" className="text-dark black" />
-            </div>
-            
-            <div className="mb-3">
-              <p className="text-dark black text-5xl font-bold leading-none mb-2">
-                {saldoX88.toLocaleString('pt-PT')} 
-              </p>
-              <p className="text-dark black/90 text-lg">
-               
-              </p>
-            </div>
-
-            <div className="absolute bottom-4 right-4">
-              <img 
-                src="https://res.cloudinary.com/dxchbdcai/image/upload/v1759251700/LOGOTIPO_X88_BLACK_PNG.fw_zpepci.png" 
-                alt="X88"
-                className="w-14 h-9 object-contain"
-              />
-            </div>
-          </div>
+        {/* Tabs */}
+        <div className="flex gap-2 mb-4">
+          <button
+            onClick={() => setAbaAtiva('solicitar')}
+            className={`flex-1 py-3 px-4 rounded-xl font-semibold transition-all ${
+              abaAtiva === 'solicitar'
+                ? 'bg-brand-600 text-white'
+                : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400'
+            }`}
+          >
+            Solicitar
+          </button>
+          <button
+            onClick={() => setAbaAtiva('meus')}
+            className={`flex-1 py-3 px-4 rounded-xl font-semibold transition-all ${
+              abaAtiva === 'meus'
+                ? 'bg-brand-600 text-white'
+                : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400'
+            }`}
+          >
+            Meus Empréstimos
+          </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        {abaAtiva === 'solicitar' ? (
+          <>
+            {/* Card Verde - Saldo Disponível */}
+            <div className="mb-3">
+              <div className="rounded-2xl p-6 shadow-md relative" style={{ backgroundColor: '#15FF5D', borderColor: '#15FF5D' }}>
+                <div className="flex items-center justify-between mb-4">
+                  <p className="text-dark black text-4x1 font-medium">Saldo Disponível</p>
+                  <WalletIcon size="sm" className="text-dark black" />
+                </div>
+                
+                <div className="mb-3">
+                  <p className="text-dark black text-5xl font-bold leading-none mb-2">
+                    {saldoX88.toLocaleString('pt-PT')} X88
+                  </p>
+                  <p className="text-dark black/90 text-lg">
+                    {saldoX88.toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €
+                  </p>
+                </div>
+
+                <div className="absolute bottom-4 right-4">
+                  <img 
+                    src="https://res.cloudinary.com/dxchbdcai/image/upload/v1759251700/LOGOTIPO_X88_BLACK_PNG.fw_zpepci.png" 
+                    alt="X88"
+                    className="w-14 h-9 object-contain"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <form onSubmit={handleSubmit} className="space-y-6">
           {/* Valor */}
           <div>
             <label className="block text-sm font-semibold text-black dark:text-white mb-3">
@@ -124,7 +221,8 @@ const CreditoPage = ({ creditoDisponivel, saldoX88, onSubmit }: CreditoPageProps
             <button
               type="button"
               onClick={() => setMostrarModalParcelas(true)}
-              className="input w-full text-lg text-left"
+              disabled={!valor || !dentroDoLimite}
+              className="input w-full text-lg text-left disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {parcelas}x
             </button>
@@ -135,23 +233,14 @@ const CreditoPage = ({ creditoDisponivel, saldoX88, onSubmit }: CreditoPageProps
             <label className="block text-sm font-semibold text-black dark:text-white mb-3">
               Vencimento
             </label>
-            <div className="grid grid-cols-3 gap-3">
-              {opcoesPeriodo.map((op) => (
-                <button
-                  key={op.dias}
-                  type="button"
-                  onClick={() => setPeriodo(op.dias)}
-                  className={`p-4 rounded-xl border-2 transition-all ${
-                    periodo === op.dias
-                      ? 'border-brand-500 bg-brand-50 dark:bg-brand-950 text-brand-600 font-semibold'
-                      : 'border-neutral-200 dark:border-neutral-700'
-                  }`}
-                >
-                  <p className="text-2xl font-bold mb-1">{op.dias}</p>
-                  <p className="text-xs">{op.label.split(' ')[1]}</p>
-                </button>
-              ))}
-            </div>
+            <button
+              type="button"
+              onClick={() => setMostrarModalPeriodo(true)}
+              disabled={!valor || !dentroDoLimite || !parcelas}
+              className="input w-full text-lg text-left disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {opcoesPeriodo.find(op => op.dias === periodo)?.label}
+            </button>
           </div>
 
           {/* Resumo */}
@@ -162,16 +251,16 @@ const CreditoPage = ({ creditoDisponivel, saldoX88, onSubmit }: CreditoPageProps
               <div className="space-y-3">
                 <div className="flex justify-between">
                   <span className="text-neutral-700 dark:text-neutral-300">Solicitado:</span>
-                  <span className="font-bold text-black dark:text-white">{valorNumerico} X88</span>
+                  <span className="font-bold text-black dark:text-white">{valorNumerico} €</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-neutral-700 dark:text-neutral-300">Juros ({jurosPercentual}%):</span>
-                  <span className="font-bold text-orange-600">+{valorJuros.toFixed(2)} X88</span>
+                  <span className="font-bold text-orange-600">+{valorJuros.toFixed(2)} €</span>
                 </div>
                 <div className="border-t-2 border-yellow-300 pt-3">
                   <div className="flex justify-between mb-2">
                     <span className="font-semibold">Total a pagar:</span>
-                    <span className="font-bold text-red-600 text-xl">{valorTotal.toFixed(2)} X88</span>
+                    <span className="font-bold text-red-600 text-xl">{valorTotal.toFixed(2)} €</span>
                   </div>
                 </div>
                 <div className="bg-white dark:bg-neutral-900 p-4 rounded-xl">
@@ -179,7 +268,7 @@ const CreditoPage = ({ creditoDisponivel, saldoX88, onSubmit }: CreditoPageProps
                     <div>
                       <p className="text-sm text-neutral-500">Você pagará:</p>
                       <p className="font-bold text-brand-600 text-lg">
-                        {parcelas}x de {valorParcela.toFixed(2)} X88
+                        {parcelas}x de {valorParcela.toFixed(2)} €
                       </p>
                     </div>
                     <div className="text-right">
@@ -200,7 +289,8 @@ const CreditoPage = ({ creditoDisponivel, saldoX88, onSubmit }: CreditoPageProps
             <button
               type="button"
               onClick={() => setMostrarModalMotivo(true)}
-              className="input w-full text-lg text-left"
+              disabled={!valor || !dentroDoLimite || !parcelas || !periodo}
+              className="input w-full text-lg text-left disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <span className={motivo ? 'text-black dark:text-white' : 'text-neutral-400'}>
                 {motivo || 'Selecione o motivo'}
@@ -301,6 +391,220 @@ const CreditoPage = ({ creditoDisponivel, saldoX88, onSubmit }: CreditoPageProps
               >
                 Cancelar
               </button>
+            </div>
+          </div>
+        )}
+
+        {/* Modal Flutuante de Período */}
+        {mostrarModalPeriodo && (
+          <div 
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            onClick={() => setMostrarModalPeriodo(false)}
+          >
+            <div 
+              className="bg-white dark:bg-neutral-900 rounded-3xl shadow-2xl max-w-md w-full p-6 animate-in fade-in zoom-in duration-200"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3 className="text-xl font-bold text-black dark:text-white mb-4">
+                Vencimento das Parcelas
+              </h3>
+              <div className="grid grid-cols-3 gap-3">
+                {opcoesPeriodo.map((op) => (
+                  <button
+                    key={op.dias}
+                    type="button"
+                    onClick={() => {
+                      setPeriodo(op.dias)
+                      setMostrarModalPeriodo(false)
+                    }}
+                    className={`p-4 rounded-xl border-2 transition-all ${
+                      periodo === op.dias
+                        ? 'border-brand-500 bg-brand-500 text-white font-semibold'
+                        : 'border-neutral-200 dark:border-neutral-700 hover:border-brand-300'
+                    }`}
+                  >
+                    <p className="text-2xl font-bold mb-1">{op.dias}</p>
+                    <p className="text-xs">{op.label.split(' ')[1]}</p>
+                  </button>
+                ))}
+              </div>
+              <button
+                type="button"
+                onClick={() => setMostrarModalPeriodo(false)}
+                className="w-full mt-4 p-3 bg-neutral-200 dark:bg-neutral-800 rounded-xl font-semibold"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        )}
+          </>
+        ) : (
+          <div className="space-y-4">
+            {meusEmprestimos.length === 0 ? (
+              <div className="text-center py-12">
+                <p className="text-neutral-500 dark:text-neutral-400">Você ainda não possui empréstimos</p>
+              </div>
+            ) : (
+              meusEmprestimos.map((emprestimo) => {
+                const parcelasPagas = emprestimo.parcelasPagas || 0
+                const totalParcelas = emprestimo.parcelas || 0
+                const isFinalizado = parcelasPagas >= totalParcelas
+                
+                return (
+                <div key={emprestimo.id} className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-5 shadow-sm">
+                  <div className="flex items-start justify-between mb-4">
+                    <div>
+                      <h3 className="font-bold text-lg text-black dark:text-white">
+                        {emprestimo.valor.toLocaleString('pt-PT')} €
+                      </h3>
+                      <p className="text-sm text-neutral-500 dark:text-neutral-400">{emprestimo.motivo}</p>
+                    </div>
+                    <span className={`text-xs px-3 py-1 rounded-full ${
+                      isFinalizado 
+                        ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300'
+                        : 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300'
+                    }`}>
+                      {isFinalizado ? 'Finalizado' : 'Ativo'}
+                    </span>
+                  </div>
+
+                  <div className="bg-neutral-50 dark:bg-neutral-800 rounded-xl p-4 space-y-3">
+                    <div className="flex justify-between">
+                      <span className="text-sm text-neutral-600 dark:text-neutral-400">Parcelas:</span>
+                      <span className="font-semibold text-black dark:text-white">
+                        {parcelasPagas}/{totalParcelas}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm text-neutral-600 dark:text-neutral-400">Valor da parcela:</span>
+                      <span className="font-semibold text-black dark:text-white">
+                        {emprestimo.valorParcela?.toFixed(2)} €
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm text-neutral-600 dark:text-neutral-400">Juros aplicados:</span>
+                      <span className="font-semibold text-orange-600">{emprestimo.juros}%</span>
+                    </div>
+                    <div className="border-t border-neutral-200 dark:border-neutral-700 pt-3 mt-3">
+                      <div className="flex justify-between">
+                        <span className="text-sm font-semibold text-neutral-700 dark:text-neutral-300">Total a pagar:</span>
+                        <span className="font-bold text-red-600 text-lg">
+                          {emprestimo.valorTotal?.toFixed(2)} €
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm text-neutral-600 dark:text-neutral-400">Vencimento:</span>
+                      <div className="text-right">
+                        <p className="font-semibold text-black dark:text-white">A cada {emprestimo.periodo} dias</p>
+                        <p className="text-xs text-brand-600">
+                          Próxima: {new Date(new Date(emprestimo.data).getTime() + (emprestimo.periodo || 30) * 24 * 60 * 60 * 1000).toLocaleDateString('pt-PT')}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 text-xs text-neutral-500 dark:text-neutral-400">
+                    Solicitado em: {new Date(emprestimo.data).toLocaleDateString('pt-PT')}
+                  </div>
+
+                  {!isFinalizado && (
+                    <button
+                      onClick={() => handleAbrirModalPagamento(emprestimo)}
+                      className="mt-4 w-full py-3 px-4 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold transition-colors"
+                    >
+                      Pagar Parcela ({emprestimo.valorParcela?.toFixed(2)} €)
+                    </button>
+                  )}
+                </div>
+                )
+              })
+            )}
+          </div>
+        )}
+
+        {/* Modal de Pagamento com Dados Bancários */}
+        {mostrarModalPagamento && emprestimoSelecionado && dadosBancarios && (
+          <div 
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-start justify-center pt-8 pb-4 px-4 overflow-y-auto"
+            onClick={() => setMostrarModalPagamento(false)}
+          >
+            <div 
+              className="bg-white dark:bg-neutral-900 rounded-3xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto p-5 animate-in fade-in zoom-in duration-200"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3 className="text-xl font-bold text-black dark:text-white mb-3">
+                Pagamento de Parcela
+              </h3>
+
+              <div className="bg-brand-50 dark:bg-brand-950 border-2 border-brand-300 dark:border-brand-700 p-3 rounded-xl mb-3">
+                <p className="text-xs text-neutral-700 dark:text-neutral-300 mb-1">
+                  Valor da parcela:
+                </p>
+                <p className="text-2xl font-bold text-brand-600">
+                  {emprestimoSelecionado.valorParcela?.toFixed(2)} €
+                </p>
+              </div>
+
+              <div className="bg-yellow-50 dark:bg-yellow-950 border-2 border-yellow-300 dark:border-yellow-700 p-3 rounded-xl mb-3">
+                <p className="text-xs font-semibold text-yellow-800 dark:text-yellow-200 mb-2">
+                  ⚠️ Instruções de Pagamento
+                </p>
+                <p className="text-xs text-neutral-700 dark:text-neutral-300 leading-relaxed">
+                  Faça uma transferência bancária para a conta abaixo e após a confirmação do gestor, sua parcela será marcada como paga.
+                </p>
+              </div>
+
+              <div className="bg-neutral-50 dark:bg-neutral-800 rounded-xl p-3 mb-3">
+                <h4 className="font-bold text-black dark:text-white mb-2 text-sm">
+                  Dados Bancários do Gestor
+                </h4>
+                
+                <div className="space-y-2">
+                  <div>
+                    <p className="text-xs text-neutral-500 dark:text-neutral-400">Nome</p>
+                    <p className="font-semibold text-black dark:text-white text-sm">{dadosBancarios.nome}</p>
+                  </div>
+                  
+                  <div>
+                    <p className="text-xs text-neutral-500 dark:text-neutral-400">Banco</p>
+                    <p className="font-semibold text-black dark:text-white text-sm">{dadosBancarios.banco}</p>
+                  </div>
+                  
+                  <div>
+                    <p className="text-xs text-neutral-500 dark:text-neutral-400">IBAN</p>
+                    <p className="font-mono font-semibold text-black dark:text-white text-xs">{dadosBancarios.iban}</p>
+                  </div>
+                  
+                  <div>
+                    <p className="text-xs text-neutral-500 dark:text-neutral-400">NIB</p>
+                    <p className="font-mono font-semibold text-black dark:text-white text-xs">{dadosBancarios.nib}</p>
+                  </div>
+                  
+                  <div>
+                    <p className="text-xs text-neutral-500 dark:text-neutral-400">SWIFT/BIC</p>
+                    <p className="font-mono font-semibold text-black dark:text-white text-xs">{dadosBancarios.swift}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setMostrarModalPagamento(false)}
+                  className="flex-1 py-2.5 px-4 bg-neutral-200 dark:bg-neutral-800 rounded-xl font-semibold text-sm"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  onClick={handleConfirmarPagamento}
+                  className="flex-1 py-2.5 px-4 bg-brand-600 hover:bg-brand-700 text-white rounded-xl font-semibold transition-colors text-sm"
+                >
+                  Confirmar Pagamento
+                </button>
+              </div>
             </div>
           </div>
         )}

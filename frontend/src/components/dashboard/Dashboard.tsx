@@ -10,7 +10,7 @@ import { DadosUsuario } from '../auth/Cadastro'
 
 interface Transacao {
   id: string
-  tipo: 'saque' | 'credito' | 'transferencia'
+  tipo: 'saque' | 'credito' | 'transferencia' | 'x88'
   valor: number
   valorEuro?: number
   telefone?: string
@@ -24,6 +24,7 @@ interface Transacao {
   juros?: number
   destinatarioId?: string
   destinatarioNome?: string
+  parcelasPagas?: number
 }
 
 interface DashboardProps {
@@ -38,10 +39,49 @@ interface DashboardProps {
 const Dashboard = ({ onLogout, dadosUsuario, userId = '0001', saldoInicial, creditoInicial, isNewAccount = false }: DashboardProps) => {
   const [paginaAtual, setPaginaAtual] = useState('inicio')
   const [paginaAnterior, setPaginaAnterior] = useState<string | null>(null)
+  const [isRefreshing, setIsRefreshing] = useState(false)
 
   useEffect(() => {
     window.scrollTo(0, 0)
   }, [paginaAtual])
+
+  useEffect(() => {
+    let startY = 0
+    let pulling = false
+
+    const handleTouchStart = (e: TouchEvent) => {
+      if (window.scrollY === 0) {
+        startY = e.touches[0].pageY
+        pulling = true
+      }
+    }
+
+    const handleTouchMove = (e: TouchEvent) => {
+      if (!pulling) return
+      const currentY = e.touches[0].pageY
+      const pullDistance = currentY - startY
+
+      if (pullDistance > 100 && !isRefreshing) {
+        pulling = false
+        setIsRefreshing(true)
+        window.location.reload()
+      }
+    }
+
+    const handleTouchEnd = () => {
+      pulling = false
+    }
+
+    document.addEventListener('touchstart', handleTouchStart)
+    document.addEventListener('touchmove', handleTouchMove)
+    document.addEventListener('touchend', handleTouchEnd)
+
+    return () => {
+      document.removeEventListener('touchstart', handleTouchStart)
+      document.removeEventListener('touchmove', handleTouchMove)
+      document.removeEventListener('touchend', handleTouchEnd)
+    }
+  }, [isRefreshing])
   
   // Dados do usuário - se for nova conta, começa zerado
   const [saldoX88, setSaldoX88] = useState(saldoInicial ?? 5000)
@@ -77,25 +117,38 @@ const Dashboard = ({ onLogout, dadosUsuario, userId = '0001', saldoInicial, cred
     },
     {
       id: '2',
+      tipo: 'x88' as const,
+      valor: 1250,
+      data: '2025-10-02',
+      status: 'aprovado' as const
+    },
+    {
+      id: '3',
+      tipo: 'credito' as const,
+      valor: 2750,
+      motivo: 'Investimento',
+      data: '2025-10-02',
+      status: 'aprovado' as const,
+      parcelas: 5,
+      periodo: 30,
+      valorTotal: 3245,
+      valorParcela: 649,
+      juros: 18,
+      parcelasPagas: 0
+    },
+    {
+      id: '4',
       tipo: 'credito' as const,
       valor: 1000,
-      motivo: 'Investimento em negócio',
-      data: '2025-09-25',
-      status: 'pendente' as const,
+      motivo: 'Emergência médica',
+      data: '2025-10-02',
+      status: 'aprovado' as const,
       parcelas: 3,
       periodo: 30,
       valorTotal: 1180,
       valorParcela: 393.33,
-      juros: 18
-    },
-    {
-      id: '3',
-      tipo: 'saque' as const,
-      valor: 100,
-      valorEuro: 150,
-      telefone: '+351 912 345 678',
-      data: '2025-09-20',
-      status: 'negado' as const
+      juros: 18,
+      parcelasPagas: 0
     }
   ]
 
@@ -113,6 +166,24 @@ const Dashboard = ({ onLogout, dadosUsuario, userId = '0001', saldoInicial, cred
     }
   }, [isNewAccount])
 
+  // Monitora aprovação de empréstimos e solicitações X88
+  useEffect(() => {
+    transacoes.forEach(transacao => {
+      const jaProcessado = localStorage.getItem(`transacao-${transacao.id}`)
+      if (!jaProcessado && transacao.status === 'aprovado') {
+        if (transacao.tipo === 'credito') {
+          // Empréstimo aprovado: diminui do saldo (é uma dívida)
+          setSaldoX88(prev => prev - transacao.valor)
+          localStorage.setItem(`transacao-${transacao.id}`, 'processado')
+        } else if (transacao.tipo === 'x88') {
+          // Solicitação X88 aprovada: aumenta o saldo
+          setSaldoX88(prev => prev + transacao.valor)
+          localStorage.setItem(`transacao-${transacao.id}`, 'processado')
+        }
+      }
+    })
+  }, [transacoes])
+
   const handleSaque = (valorX88: number, telefone: string) => {
     const valorEuro = valorX88 * taxaConversao
     const novaTransacao: Transacao = {
@@ -121,6 +192,18 @@ const Dashboard = ({ onLogout, dadosUsuario, userId = '0001', saldoInicial, cred
       valor: valorX88,
       valorEuro,
       telefone,
+      data: new Date().toISOString().split('T')[0],
+      status: 'pendente'
+    }
+    setTransacoes([novaTransacao, ...transacoes])
+    setPaginaAtual('inicio')
+  }
+
+  const handleSolicitarX88 = (valorX88: number) => {
+    const novaTransacao: Transacao = {
+      id: Date.now().toString(),
+      tipo: 'x88',
+      valor: valorX88,
       data: new Date().toISOString().split('T')[0],
       status: 'pendente'
     }
@@ -182,6 +265,16 @@ const Dashboard = ({ onLogout, dadosUsuario, userId = '0001', saldoInicial, cred
     setPaginaAtual('inicio')
   }
 
+  const handlePagarParcela = (emprestimoId: string) => {
+    setTransacoes(transacoes.map(t => {
+      if (t.id === emprestimoId && t.tipo === 'credito') {
+        const novasParcelasPagas = (t.parcelasPagas || 0) + 1
+        return { ...t, parcelasPagas: novasParcelasPagas }
+      }
+      return t
+    }))
+  }
+
   const transacoesPendentes = transacoes.filter(t => t.status === 'pendente').length
   const saldoEmEuros = saldoX88 * taxaConversao
 
@@ -205,7 +298,7 @@ const Dashboard = ({ onLogout, dadosUsuario, userId = '0001', saldoInicial, cred
             saldoDisponivel={saldoX88}
             creditoDisponivel={creditoDisponivel}
             taxaConversao={taxaConversao}
-            onSubmit={handleSaque}
+            onSubmit={handleSolicitarX88}
             userId={userId}
             dadosBancariosCompletos={dadosBancariosCompletos}
             onNavigate={(pagina) => {
@@ -220,6 +313,8 @@ const Dashboard = ({ onLogout, dadosUsuario, userId = '0001', saldoInicial, cred
             creditoDisponivel={creditoDisponivel}
             saldoX88={saldoX88}
             onSubmit={handleSolicitarCredito}
+            transacoes={transacoes}
+            onPagarParcela={handlePagarParcela}
           />
         )
       case 'depositar':
