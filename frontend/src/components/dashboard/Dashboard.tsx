@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import BottomNav from './BottomNav'
 import HomePage from '../pages/HomePage'
 import SacarPage from '../pages/SacarPage'
@@ -39,9 +39,12 @@ interface DashboardProps {
 const Dashboard = ({ onLogout, dadosUsuario, userId = '0001', saldoInicial, creditoInicial, isNewAccount = false }: DashboardProps) => {
   const [paginaAtual, setPaginaAtual] = useState('inicio')
   const [paginaAnterior, setPaginaAnterior] = useState<string | null>(null)
+  const mainRef = useRef<HTMLElement>(null)
 
   useEffect(() => {
-    window.scrollTo(0, 0)
+    if (mainRef.current) {
+      mainRef.current.scrollTo(0, 0)
+    }
   }, [paginaAtual])
 
 
@@ -312,7 +315,7 @@ const Dashboard = ({ onLogout, dadosUsuario, userId = '0001', saldoInicial, cred
       <div style={{ height: 'env(safe-area-inset-top)', backgroundColor: 'white' }} className="dark:bg-black" />
       
       {/* Main Content - Páginas Completas */}
-      <main className="overflow-y-auto overscroll-none" style={{ 
+      <main ref={mainRef} className="overflow-y-auto overscroll-none" style={{ 
         WebkitOverflowScrolling: 'touch',
         height: 'calc(100% - env(safe-area-inset-top))',
         paddingBottom: 'calc(5rem + env(safe-area-inset-bottom))'
@@ -324,6 +327,7 @@ const Dashboard = ({ onLogout, dadosUsuario, userId = '0001', saldoInicial, cred
       <BottomNav 
         paginaAtual={paginaAtual}
         onNavigate={setPaginaAtual}
+        scrollContainerRef={mainRef}
       />
     </div>
   )

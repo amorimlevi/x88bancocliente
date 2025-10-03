@@ -1,33 +1,41 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, RefObject } from 'react'
 import { HomeIcon, HistoryIcon, UserIcon } from '../ui/Icons'
 
 interface BottomNavProps {
   paginaAtual: string
   onNavigate: (pagina: string) => void
+  scrollContainerRef?: RefObject<HTMLElement>
 }
 
-const BottomNav = ({ paginaAtual, onNavigate }: BottomNavProps) => {
+const BottomNav = ({ paginaAtual, onNavigate, scrollContainerRef }: BottomNavProps) => {
   const [isVisible, setIsVisible] = useState(true)
   const [lastScrollY, setLastScrollY] = useState(0)
 
   useEffect(() => {
+    const scrollContainer = scrollContainerRef?.current || window
+    let ticking = false
+
     const handleScroll = () => {
-      const currentScrollY = window.scrollY
-      
-      if (currentScrollY > lastScrollY && currentScrollY > 100) {
-        // Rolando para baixo e passou de 100px
-        setIsVisible(false)
-      } else if (currentScrollY < lastScrollY) {
-        // Rolando para cima
-        setIsVisible(true)
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const currentScrollY = scrollContainerRef?.current?.scrollTop || window.scrollY
+          
+          if (currentScrollY > lastScrollY && currentScrollY > 50) {
+            setIsVisible(false)
+          } else if (currentScrollY < lastScrollY) {
+            setIsVisible(true)
+          }
+          
+          setLastScrollY(currentScrollY)
+          ticking = false
+        })
+        ticking = true
       }
-      
-      setLastScrollY(currentScrollY)
     }
 
-    window.addEventListener('scroll', handleScroll, { passive: true })
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [lastScrollY])
+    scrollContainer.addEventListener('scroll', handleScroll, { passive: true })
+    return () => scrollContainer.removeEventListener('scroll', handleScroll)
+  }, [lastScrollY, scrollContainerRef])
   const X88Icon = () => (
     <img 
       src="https://res.cloudinary.com/dxchbdcai/image/upload/v1759416402/Design_sem_nome_9_z13spl.png" 
@@ -52,8 +60,8 @@ const BottomNav = ({ paginaAtual, onNavigate }: BottomNavProps) => {
 
   return (
     <nav 
-      className={`fixed left-4 right-4 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-3xl shadow-xl z-50 transition-all duration-300 ${
-        isVisible ? 'bottom-4 translate-y-0 opacity-100' : 'bottom-4 translate-y-32 opacity-0'
+      className={`fixed left-4 right-4 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-3xl shadow-xl z-50 transition-all duration-300 ease-in-out ${
+        isVisible ? 'bottom-4 translate-y-0' : '-bottom-32 translate-y-0'
       }`}
       style={{ 
         marginBottom: 'env(safe-area-inset-bottom)'
