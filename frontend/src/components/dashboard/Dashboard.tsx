@@ -308,10 +308,13 @@ const Dashboard = ({ onLogout, dadosUsuario, userId = '0001', saldoInicial, cred
 
   return (
     <div className="fixed inset-0 bg-white dark:bg-black">
+      {/* Status Bar Spacer */}
+      <div style={{ height: 'env(safe-area-inset-top)', backgroundColor: 'white' }} className="dark:bg-black" />
+      
       {/* Main Content - Páginas Completas */}
-      <main className="h-full overflow-y-auto overscroll-none" style={{ 
+      <main className="overflow-y-auto overscroll-none" style={{ 
         WebkitOverflowScrolling: 'touch',
-        paddingTop: 'env(safe-area-inset-top)',
+        height: 'calc(100% - env(safe-area-inset-top))',
         paddingBottom: 'calc(5rem + env(safe-area-inset-bottom))'
       }}>
         {renderPagina()}
