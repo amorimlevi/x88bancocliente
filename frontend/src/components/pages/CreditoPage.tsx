@@ -34,6 +34,7 @@ const CreditoPage = ({ creditoDisponivel, saldoX88, onSubmit, transacoes = [], o
   const [mostrarModalMotivo, setMostrarModalMotivo] = useState(false)
   const [mostrarModalPeriodo, setMostrarModalPeriodo] = useState(false)
   const [mostrarModalPagamento, setMostrarModalPagamento] = useState(false)
+  const [mostrarModalSucesso, setMostrarModalSucesso] = useState(false)
   const [emprestimoSelecionado, setEmprestimoSelecionado] = useState<Transacao | null>(null)
   const [dadosBancarios, setDadosBancarios] = useState<any>(null)
 
@@ -116,9 +117,9 @@ const CreditoPage = ({ creditoDisponivel, saldoX88, onSubmit, transacoes = [], o
       const data = await response.json()
       
       if (data.success) {
-        alert('Pagamento solicitado! Aguarde a aprovação do gestor.')
         setMostrarModalPagamento(false)
         setEmprestimoSelecionado(null)
+        setMostrarModalSucesso(true)
       }
     } catch (error) {
       console.error('Erro ao solicitar pagamento:', error)
@@ -521,6 +522,40 @@ const CreditoPage = ({ creditoDisponivel, saldoX88, onSubmit, transacoes = [], o
                 )
               })
             )}
+          </div>
+        )}
+
+        {/* Modal de Sucesso */}
+        {mostrarModalSucesso && (
+          <div 
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            onClick={() => setMostrarModalSucesso(false)}
+          >
+            <div 
+              className="bg-white dark:bg-neutral-900 rounded-3xl shadow-2xl max-w-md w-full p-6 animate-in fade-in zoom-in duration-200"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="text-center mb-6">
+                <div className="w-16 h-16 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-8 h-8 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-bold text-black dark:text-white mb-2">
+                  Pagamento Solicitado!
+                </h3>
+                <p className="text-neutral-600 dark:text-neutral-400">
+                  Aguarde a aprovação do gestor.
+                </p>
+              </div>
+              
+              <button
+                onClick={() => setMostrarModalSucesso(false)}
+                className="w-full py-3 px-4 bg-brand-600 hover:bg-brand-700 text-white rounded-xl font-semibold transition-colors"
+              >
+                OK
+              </button>
+            </div>
           </div>
         )}
 
