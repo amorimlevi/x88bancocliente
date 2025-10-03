@@ -26,7 +26,7 @@ const HomePage = ({
           <img 
             src="https://res.cloudinary.com/dxchbdcai/image/upload/v1759232674/LOGOTIPO_X88_PNG.fw_vjg6f1.png" 
             alt="X88 Logo"
-            className="w-16 h-12 object-contain"
+            className="w-20 h-16 object-contain"
           />
           <h1 className="text-2xl font-bold text-black dark:text-white">
             X88 Bank

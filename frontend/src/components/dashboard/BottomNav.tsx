@@ -1,4 +1,4 @@
-import { useState, useEffect, RefObject } from 'react'
+import { useState, useEffect, useRef, RefObject } from 'react'
 import { HomeIcon, HistoryIcon, UserIcon } from '../ui/Icons'
 
 interface BottomNavProps {
@@ -9,33 +9,45 @@ interface BottomNavProps {
 
 const BottomNav = ({ paginaAtual, onNavigate, scrollContainerRef }: BottomNavProps) => {
   const [isVisible, setIsVisible] = useState(true)
-  const [lastScrollY, setLastScrollY] = useState(0)
+  const lastScrollYRef = useRef(0)
+  const tickingRef = useRef(false)
+
+  // Mostra a navegação ao trocar de página
+  useEffect(() => {
+    const current = scrollContainerRef?.current?.scrollTop || window.scrollY
+    lastScrollYRef.current = current
+    setIsVisible(true)
+  }, [paginaAtual, scrollContainerRef])
 
   useEffect(() => {
-    const scrollContainer = scrollContainerRef?.current || window
-    let ticking = false
+    const target = scrollContainerRef?.current || window
+    const getScrollY = () => scrollContainerRef?.current?.scrollTop || window.scrollY
 
     const handleScroll = () => {
-      if (!ticking) {
-        window.requestAnimationFrame(() => {
-          const currentScrollY = scrollContainerRef?.current?.scrollTop || window.scrollY
-          
-          if (currentScrollY > lastScrollY && currentScrollY > 50) {
-            setIsVisible(false)
-          } else if (currentScrollY < lastScrollY) {
-            setIsVisible(true)
-          }
-          
-          setLastScrollY(currentScrollY)
-          ticking = false
-        })
-        ticking = true
-      }
+      if (tickingRef.current) return
+      tickingRef.current = true
+
+      window.requestAnimationFrame(() => {
+        const current = getScrollY()
+        const delta = current - lastScrollYRef.current
+
+        const downThreshold = 8
+        const upThreshold = 8
+
+        if (current > 50 && delta > downThreshold) {
+          setIsVisible(prev => prev ? false : prev)
+        } else if (delta < -upThreshold) {
+          setIsVisible(prev => !prev ? true : prev)
+        }
+
+        lastScrollYRef.current = current
+        tickingRef.current = false
+      })
     }
 
-    scrollContainer.addEventListener('scroll', handleScroll, { passive: true })
-    return () => scrollContainer.removeEventListener('scroll', handleScroll)
-  }, [lastScrollY, scrollContainerRef])
+    target.addEventListener('scroll', handleScroll, { passive: true })
+    return () => target.removeEventListener('scroll', handleScroll)
+  }, [scrollContainerRef])
   const X88Icon = () => (
     <img 
       src="https://res.cloudinary.com/dxchbdcai/image/upload/v1759416402/Design_sem_nome_9_z13spl.png" 
