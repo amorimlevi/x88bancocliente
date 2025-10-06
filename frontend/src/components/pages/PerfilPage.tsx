@@ -26,6 +26,9 @@ const PerfilPage = ({ onLogout, dadosUsuario, userId = '0001', dadosBancarios, o
   const [mostrarNotificacoes, setMostrarNotificacoes] = useState(false)
   const [mostrarSeguranca, setMostrarSeguranca] = useState(false)
 
+  console.log('PerfilPage - userId:', userId)
+  console.log('PerfilPage - dadosUsuario:', dadosUsuario)
+
   useEffect(() => {
     const metaThemeColors = document.querySelectorAll('meta[name="theme-color"]')
     metaThemeColors.forEach(meta => {

@@ -43,7 +43,7 @@ const HomePage = ({
             
             <div className="mb-3">
               <p className="text-dark black text-5xl font-bold leading-none mb-2">
-                {saldoX88.toLocaleString('pt-PT')} X88
+                {saldoX88.toLocaleString('pt-PT')} 
               </p>
               <p className="text-dark black/90 text-lg">
                 {saldoX88.toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €

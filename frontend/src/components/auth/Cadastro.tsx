@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { UserIcon, EyeIcon, EyeOffIcon, MapPinIcon } from '../ui/Icons'
 import { ThemeToggle } from '../ui/ThemeToggle'
+import { registrar } from '../../services/authServiceSupabase'
 
 export interface DadosUsuario {
   nome: string
@@ -14,13 +15,15 @@ export interface DadosUsuario {
 
 interface CadastroProps {
   onVoltar: () => void
-  onCadastro: (dados: DadosUsuario) => void
+  onCadastro: (clienteId: string, email: string) => void
 }
 
 const Cadastro = ({ onVoltar, onCadastro }: CadastroProps) => {
   const [etapa, setEtapa] = useState(1)
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const [erro, setErro] = useState('')
+  const [carregando, setCarregando] = useState(false)
 
   // Dados Pessoais
   const [nome, setNome] = useState('')
@@ -37,26 +40,55 @@ const Cadastro = ({ onVoltar, onCadastro }: CadastroProps) => {
 
   const handleSubmitEtapa1 = (e: React.FormEvent) => {
     e.preventDefault()
+    setErro('')
+    
+    if (senha.length < 6) {
+      setErro('A senha deve ter no mínimo 6 caracteres')
+      return
+    }
+    
     if (senha !== confirmarSenha) {
-      alert('As senhas não coincidem!')
+      setErro('As senhas não coincidem!')
       return
     }
     setEtapa(2)
   }
 
-  const handleSubmitEtapa2 = (e: React.FormEvent) => {
+  const handleSubmitEtapa2 = async (e: React.FormEvent) => {
     e.preventDefault()
-    // Aqui você implementaria o cadastro real
-    const dadosUsuario: DadosUsuario = {
-      nome,
-      email,
-      telefone,
-      morada,
-      codigoPostal,
-      cidade,
-      distrito
+    setErro('')
+    setCarregando(true)
+
+    try {
+      // Registrar com Supabase Auth
+      const resultado = await registrar(
+        nome,
+        email,
+        telefone,
+        senha,
+        {
+          morada,
+          codigoPostal,
+          cidade,
+          distrito
+        }
+      )
+
+      if (!resultado.sucesso) {
+        setErro(resultado.mensagem)
+        setCarregando(false)
+        return
+      }
+
+      // Sucesso!
+      onCadastro(resultado.cliente_id || '', email)
+
+    } catch (error) {
+      console.error('Erro no cadastro:', error)
+      setErro('Erro ao processar cadastro. Tente novamente.')
+    } finally {
+      setCarregando(false)
     }
-    onCadastro(dadosUsuario)
   }
 
   return (
@@ -185,6 +217,13 @@ const Cadastro = ({ onVoltar, onCadastro }: CadastroProps) => {
                 </div>
               </div>
 
+              {/* Mensagem de Erro */}
+              {erro && (
+                <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl">
+                  <p className="text-sm text-red-600 dark:text-red-400 text-center">{erro}</p>
+                </div>
+              )}
+
               <button type="submit" className="w-full btn-primary">
                 Continuar
               </button>
@@ -271,16 +310,28 @@ const Cadastro = ({ onVoltar, onCadastro }: CadastroProps) => {
                 />
               </div>
 
+              {/* Mensagem de Erro */}
+              {erro && (
+                <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl">
+                  <p className="text-sm text-red-600 dark:text-red-400 text-center">{erro}</p>
+                </div>
+              )}
+
               <div className="flex gap-3 pt-2">
                 <button
                   type="button"
                   onClick={() => setEtapa(1)}
-                  className="flex-1 py-3 px-6 rounded-2xl font-semibold text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                  disabled={carregando}
+                  className="flex-1 py-3 px-6 rounded-2xl font-semibold text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors disabled:opacity-50"
                 >
                   Voltar
                 </button>
-                <button type="submit" className="flex-1 btn-primary">
-                  Criar Conta
+                <button 
+                  type="submit" 
+                  disabled={carregando}
+                  className="flex-1 btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {carregando ? 'Criando...' : 'Criar Conta'}
                 </button>
               </div>
             </form>

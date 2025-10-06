@@ -2,9 +2,10 @@ import { useState, useEffect } from 'react'
 import { UserIcon, EyeIcon, EyeOffIcon } from '../ui/Icons'
 import { ThemeToggle } from '../ui/ThemeToggle'
 import RecuperarSenha from './RecuperarSenha'
+import { login } from '../../services/authServiceSupabase'
 
 interface LoginProps {
-  onLogin: (email: string) => void
+  onLogin: (clienteId: string, email: string) => void
   onMostrarCadastro: () => void
 }
 
@@ -14,6 +15,8 @@ const Login = ({ onLogin, onMostrarCadastro }: LoginProps) => {
   const [showPassword, setShowPassword] = useState(false)
   const [manterConectado, setManterConectado] = useState(false)
   const [mostrarRecuperar, setMostrarRecuperar] = useState(false)
+  const [erro, setErro] = useState('')
+  const [carregando, setCarregando] = useState(false)
 
   useEffect(() => {
     // Define a cor da status bar quando o componente monta
@@ -30,10 +33,28 @@ const Login = ({ onLogin, onMostrarCadastro }: LoginProps) => {
     }
   }, [])
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // Aqui implementaremos a autenticação real
-    onLogin(email)
+    setErro('')
+    setCarregando(true)
+
+    try {
+      const resultado = await login(email, password)
+      
+      if (resultado.sucesso && resultado.cliente_id) {
+        if (manterConectado) {
+          localStorage.setItem('clienteId', resultado.cliente_id)
+          localStorage.setItem('email', resultado.email || '')
+        }
+        onLogin(resultado.cliente_id, resultado.email || '')
+      } else {
+        setErro(resultado.mensagem)
+      }
+    } catch (error) {
+      setErro('Erro ao conectar. Verifique sua conexão.')
+    } finally {
+      setCarregando(false)
+    }
   }
 
   if (mostrarRecuperar) {
@@ -121,13 +142,21 @@ const Login = ({ onLogin, onMostrarCadastro }: LoginProps) => {
               </label>
             </div>
 
+            {/* Mensagem de Erro */}
+            {erro && (
+              <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl">
+                <p className="text-sm text-red-600 dark:text-red-400 text-center">{erro}</p>
+              </div>
+            )}
+
             {/* Login Button */}
             <button
               type="submit"
-              className="w-full btn-primary flex items-center justify-center gap-3"
+              disabled={carregando}
+              className="w-full btn-primary flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <UserIcon size="md" />
-              <span>Entrar</span>
+              <span>{carregando ? 'Entrando...' : 'Entrar'}</span>
             </button>
           </form>
 

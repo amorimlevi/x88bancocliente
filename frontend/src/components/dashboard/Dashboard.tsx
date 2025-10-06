@@ -7,6 +7,8 @@ import HistoricoPage from '../pages/HistoricoPage'
 import PerfilPage from '../pages/PerfilPage'
 import TransferirX88Page from '../pages/TransferirX88Page'
 import { DadosUsuario } from '../auth/Cadastro'
+import { useCarteira, useTransacoes, useSolicitacoes, useCliente } from '../../hooks/useSupabaseData'
+import { criarSolicitacao, transferirX88 } from '../../services/supabaseService'
 
 interface Transacao {
   id: string
@@ -36,10 +38,17 @@ interface DashboardProps {
   isNewAccount?: boolean
 }
 
-const Dashboard = ({ onLogout, dadosUsuario, userId = '0001', saldoInicial, creditoInicial, isNewAccount = false }: DashboardProps) => {
+const Dashboard = ({ onLogout, dadosUsuario, userId = '0001' }: DashboardProps) => {
   const [paginaAtual, setPaginaAtual] = useState('inicio')
   const [paginaAnterior, setPaginaAnterior] = useState<string | null>(null)
   const mainRef = useRef<HTMLElement>(null)
+
+  const { cliente } = useCliente(userId)
+  const { carteira, atualizarCarteira } = useCarteira(userId)
+  const { transacoes: transacoesSupabase } = useTransacoes(userId)
+  const { solicitacoes } = useSolicitacoes(userId)
+
+  const carteiraId = carteira?.id ? String(carteira.id) : userId
 
   useEffect(() => {
     if (mainRef.current) {
@@ -47,20 +56,29 @@ const Dashboard = ({ onLogout, dadosUsuario, userId = '0001', saldoInicial, cred
     }
   }, [paginaAtual])
 
-
-  
-  // Dados do usuário - se for nova conta, começa zerado
-  const [saldoX88, setSaldoX88] = useState(saldoInicial ?? 5000)
-  const [creditoDisponivel] = useState(creditoInicial ?? 3450)
-  const taxaConversao = 1.0 // 1 X88 = 1 €
+  const saldoX88 = carteira ? parseFloat(carteira.saldo) : 0
+  const creditoDisponivel = 5000
+  const taxaConversao = 1.0
   
   const [dadosBancarios, setDadosBancarios] = useState({
-    iban: '',
-    titular: '',
-    banco: '',
+    iban: cliente?.dados_bancarios?.iban || '',
+    titular: cliente?.nome || '',
+    banco: cliente?.dados_bancarios?.banco || '',
     nib: '',
-    mbWay: ''
+    mbWay: cliente?.dados_bancarios?.mbway || ''
   })
+
+  useEffect(() => {
+    if (cliente) {
+      setDadosBancarios({
+        iban: cliente.dados_bancarios?.iban || '',
+        titular: cliente.nome || '',
+        banco: cliente.dados_bancarios?.banco || '',
+        nib: '',
+        mbWay: cliente.dados_bancarios?.mbway || ''
+      })
+    }
+  }, [cliente])
 
   const handleSalvarDadosBancarios = (dados: typeof dadosBancarios) => {
     setDadosBancarios(dados)
@@ -70,178 +88,72 @@ const Dashboard = ({ onLogout, dadosUsuario, userId = '0001', saldoInicial, cred
     }
   }
   
-  // Transações - se for nova conta, começa vazio
-  const transacoesDefault = [
-    {
-      id: '1',
-      tipo: 'saque' as const,
-      valor: 200,
-      valorEuro: 200,
-      telefone: '+351 912 345 678',
-      data: '2025-09-28',
-      status: 'aprovado' as const
-    },
-    {
-      id: '2',
-      tipo: 'x88' as const,
-      valor: 1250,
-      data: '2025-10-02',
-      status: 'aprovado' as const
-    },
-    {
-      id: '3',
-      tipo: 'credito' as const,
-      valor: 2750,
-      motivo: 'Investimento',
-      data: '2025-10-02',
-      status: 'aprovado' as const,
-      parcelas: 5,
-      periodo: 30,
-      valorTotal: 3245,
-      valorParcela: 649,
-      juros: 18,
-      parcelasPagas: 0
-    },
-    {
-      id: '4',
-      tipo: 'credito' as const,
-      valor: 1000,
-      motivo: 'Emergência médica',
-      data: '2025-10-02',
-      status: 'aprovado' as const,
-      parcelas: 3,
-      periodo: 30,
-      valorTotal: 1180,
-      valorParcela: 393.33,
-      juros: 18,
-      parcelasPagas: 0
-    }
-  ]
+  const transacoes: Transacao[] = transacoesSupabase.map(t => ({
+    id: t.id,
+    tipo: t.categoria === 'transferencia' ? 'transferencia' as const : 
+          t.tipo === 'credito' ? 'x88' as const : 'saque' as const,
+    valor: parseFloat(t.valor),
+    data: new Date(t.criado_em).toISOString().split('T')[0],
+    status: 'aprovado' as const
+  }))
 
-  const [transacoes, setTransacoes] = useState<Transacao[]>([])
+  const solicitacoesPendentes = solicitacoes.filter(s => s.status === 'pendente')
 
-  // Atualiza transações baseado em isNewAccount
-  useEffect(() => {
-    console.log('isNewAccount:', isNewAccount)
-    if (isNewAccount) {
-      console.log('Limpando transações para nova conta')
-      setTransacoes([])
-    } else {
-      console.log('Carregando transações padrão')
-      setTransacoes(transacoesDefault)
-    }
-  }, [isNewAccount])
-
-  // Monitora aprovação de empréstimos e solicitações X88
-  useEffect(() => {
-    transacoes.forEach(transacao => {
-      const jaProcessado = localStorage.getItem(`transacao-${transacao.id}`)
-      if (!jaProcessado && transacao.status === 'aprovado') {
-        if (transacao.tipo === 'credito') {
-          // Empréstimo aprovado: diminui do saldo (é uma dívida)
-          setSaldoX88(prev => prev - transacao.valor)
-          localStorage.setItem(`transacao-${transacao.id}`, 'processado')
-        } else if (transacao.tipo === 'x88') {
-          // Solicitação X88 aprovada: aumenta o saldo
-          setSaldoX88(prev => prev + transacao.valor)
-          localStorage.setItem(`transacao-${transacao.id}`, 'processado')
-        }
-      }
-    })
-  }, [transacoes])
-
-  const handleSaque = (valorX88: number, telefone: string) => {
-    const valorEuro = valorX88 * taxaConversao
-    const novaTransacao: Transacao = {
-      id: Date.now().toString(),
-      tipo: 'saque',
-      valor: valorX88,
-      valorEuro,
-      telefone,
-      data: new Date().toISOString().split('T')[0],
-      status: 'pendente'
-    }
-    setTransacoes([novaTransacao, ...transacoes])
+  const handleSolicitarX88 = async (valorX88: number) => {
+    if (!cliente) return
+    
+    await criarSolicitacao(
+      cliente.id,
+      cliente.nome,
+      'x88',
+      'x88',
+      valorX88,
+      1,
+      'Solicitação de X88',
+      'Solicitação de crédito X88'
+    )
+    
     setPaginaAtual('inicio')
   }
 
-  const handleSolicitarX88 = (valorX88: number) => {
-    const novaTransacao: Transacao = {
-      id: Date.now().toString(),
-      tipo: 'x88',
-      valor: valorX88,
-      data: new Date().toISOString().split('T')[0],
-      status: 'pendente'
-    }
-    setTransacoes([novaTransacao, ...transacoes])
-    setPaginaAtual('inicio')
-  }
-
-  const handleSolicitarCredito = (
+  const handleSolicitarCredito = async (
     valor: number, 
     motivo: string,
     parcelas: number, 
-    periodo: number, 
-    valorTotal: number, 
-    valorParcela: number
+    periodo: number
   ) => {
-    const jurosPercentual = ((valorTotal - valor) / valor) * 100
-    const novaTransacao: Transacao = {
-      id: Date.now().toString(),
-      tipo: 'credito',
+    if (!cliente) return
+
+    await criarSolicitacao(
+      cliente.id,
+      cliente.nome,
+      'emprestimo',
+      'euro',
       valor,
-      data: new Date().toISOString().split('T')[0],
-      status: 'pendente',
       parcelas,
-      periodo,
-      valorTotal,
-      valorParcela,
-      juros: jurosPercentual
-    }
-    setTransacoes([novaTransacao, ...transacoes])
+      `Empréstimo - ${motivo}`,
+      `Motivo: ${motivo}, Parcelas: ${parcelas}, Período: ${periodo} dias`
+    )
+    
     setPaginaAtual('inicio')
   }
 
-  const handleTransferencia = (destinatario: string, valor: number) => {
-    const novaTransacao: Transacao = {
-      id: Date.now().toString(),
-      tipo: 'saque',
-      valor,
-      telefone: `ID: ${destinatario}`,
-      data: new Date().toISOString().split('T')[0],
-      status: 'pendente'
+  const handleTransferenciaX88 = async (destinatarioId: string, valor: number) => {
+    if (!cliente) return
+
+    const result = await transferirX88(cliente.id, destinatarioId, valor)
+    
+    if (result.success) {
+      await atualizarCarteira()
+      setPaginaAtual('inicio')
     }
-    setTransacoes([novaTransacao, ...transacoes])
-    setPaginaAtual('inicio')
   }
 
-  const handleTransferenciaX88 = (destinatarioId: string, valor: number, destinatarioNome?: string) => {
-    const novaTransacao: Transacao = {
-      id: Date.now().toString(),
-      tipo: 'transferencia',
-      valor,
-      telefone: `ID: ${destinatarioId}`,
-      data: new Date().toISOString().split('T')[0],
-      status: 'aprovado',
-      destinatarioId,
-      destinatarioNome
-    }
-    setTransacoes([novaTransacao, ...transacoes])
-    setSaldoX88(saldoX88 - valor)
-    setPaginaAtual('inicio')
+  const handlePagarParcela = async (_emprestimoId: string) => {
+    // Implementar lógica de pagamento de parcela via Supabase
   }
 
-  const handlePagarParcela = (emprestimoId: string) => {
-    setTransacoes(transacoes.map(t => {
-      if (t.id === emprestimoId && t.tipo === 'credito') {
-        const novasParcelasPagas = (t.parcelasPagas || 0) + 1
-        return { ...t, parcelasPagas: novasParcelasPagas }
-      }
-      return t
-    }))
-  }
-
-  const transacoesPendentes = transacoes.filter(t => t.status === 'pendente').length
+  const transacoesPendentes = solicitacoesPendentes.length
   const saldoEmEuros = saldoX88 * taxaConversao
 
   const renderPagina = () => {
@@ -265,7 +177,7 @@ const Dashboard = ({ onLogout, dadosUsuario, userId = '0001', saldoInicial, cred
             creditoDisponivel={creditoDisponivel}
             taxaConversao={taxaConversao}
             onSubmit={handleSolicitarX88}
-            userId={userId}
+            userId={carteiraId}
             dadosBancariosCompletos={dadosBancariosCompletos}
             onNavigate={(pagina) => {
               setPaginaAnterior('sacar')
@@ -291,8 +203,16 @@ const Dashboard = ({ onLogout, dadosUsuario, userId = '0001', saldoInicial, cred
       case 'perfil':
         return <PerfilPage 
           onLogout={onLogout} 
-          dadosUsuario={dadosUsuario}
-          userId={userId}
+          dadosUsuario={cliente ? {
+            nome: cliente.nome,
+            email: cliente.email,
+            telefone: cliente.telefone || '',
+            morada: (cliente.endereco as any)?.morada || '',
+            codigoPostal: (cliente.endereco as any)?.codigoPostal || '',
+            cidade: (cliente.endereco as any)?.cidade || '',
+            distrito: (cliente.endereco as any)?.distrito || ''
+          } : dadosUsuario}
+          userId={carteiraId}
           dadosBancarios={dadosBancarios}
           onSalvarDadosBancarios={handleSalvarDadosBancarios}
         />

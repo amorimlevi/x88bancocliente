@@ -23,7 +23,7 @@ const TransferirX88Page = ({ saldoDisponivel, onSubmit, userId = '0001' }: Trans
 
   useEffect(() => {
     const buscarUsuario = async () => {
-      if (destinatarioId.length === 4) {
+      if (destinatarioId.length === 6) {
         setBuscandoUsuario(true)
         setErroUsuario('')
         setUsuarioDestinatario(null)
@@ -145,11 +145,11 @@ const TransferirX88Page = ({ saldoDisponivel, onSubmit, userId = '0001' }: Trans
               onChange={(e) => setDestinatarioId(e.target.value)}
               className="input w-full text-lg"
               placeholder="Digite o ID do destinatário"
-              maxLength={4}
+              maxLength={6}
               required
             />
             <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-2">
-              💡 Insira o ID de 4 dígitos da pessoa que receberá o X88
+              💡 Insira o ID de 6 dígitos da pessoa que receberá o X88
             </p>
 
             {/* Carregando */}
