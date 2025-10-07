@@ -101,16 +101,70 @@ export const criarTransacao = async (
   }
 }
 
+// Buscar destinatário por ID da carteira (pode ser cliente ou gestor)
+export const buscarDestinatarioPorIdCarteira = async (idCarteira: string) => {
+if (!supabase) {
+  return { success: false, error: 'Supabase não configurado' }
+  }
+
+try {
+  // Buscar em carteira_x88 (clientes)
+    const { data: carteiraCliente, error: errCliente } = await supabase
+    .from('carteira_x88')
+  .select('id, cliente_id, clientes(id, nome, email, dados_bancarios)')
+.eq('id', parseInt(idCarteira))
+.single()
+
+if (!errCliente && carteiraCliente) {
+      return {
+    success: true,
+        destinatario: {
+      id: carteiraCliente.cliente_id,
+          nome: carteiraCliente.clientes.nome,
+      email: carteiraCliente.clientes.email,
+    dados_bancarios: carteiraCliente.clientes.dados_bancarios,
+      tipo: 'cliente'
+        }
+  }
+}
+
+// Buscar em carteira_x88_gestor (gestores)
+const { data: carteiraGestor, error: errGestor } = await supabase
+.from('carteira_x88_gestor')
+.select('id, gestor_id, gestores(id, nome_completo, email)')
+.eq('id', parseInt(idCarteira))
+.single()
+
+if (!errGestor && carteiraGestor) {
+return {
+  success: true,
+  destinatario: {
+    id: carteiraGestor.gestor_id,
+    nome: carteiraGestor.gestores.nome_completo,
+      email: carteiraGestor.gestores.email,
+          dados_bancarios: null, // Gestor pode ter dados bancários próprios
+      tipo: 'gestor'
+      }
+  }
+  }
+
+    return { success: false, error: 'Destinatário não encontrado' }
+  } catch (error: any) {
+    return { success: false, error: error.message }
+  }
+}
+
 export const transferirX88 = async (
   remetenteId: string,
-  destinatarioId: string,
+  destinatarioIdCarteira: string,
   valor: number
 ) => {
   if (!supabase) {
     return { success: false, error: 'Supabase não configurado' }
   }
-  
+
   try {
+    // 1. Buscar carteira do remetente (sempre cliente)
     const { data: carteiraRemetente, error: errRemetente } = await supabase
       .from('carteira_x88')
       .select('saldo')
@@ -125,25 +179,65 @@ export const transferirX88 = async (
       throw new Error('Saldo insuficiente')
     }
 
+    // 2. Buscar destinatário (pode ser cliente ou gestor)
+    const resultBusca = await buscarDestinatarioPorIdCarteira(destinatarioIdCarteira)
+    
+    if (!resultBusca.success || !resultBusca.destinatario) {
+      throw new Error('Destinatário não encontrado')
+    }
+
+    const destinatario = resultBusca.destinatario
+
+    // 3. Débito do remetente
     await criarTransacao(
       remetenteId,
       'debito',
       valor,
-      `Transferência para ${destinatarioId}`,
+      `Transferência para ${destinatario.nome}`,
       'transferencia',
-      destinatarioId
+      destinatarioIdCarteira
     )
 
-    await criarTransacao(
-      destinatarioId,
-      'credito',
-      valor,
-      `Transferência recebida de ${remetenteId}`,
-      'transferencia',
-      remetenteId
-    )
+    // 4. Crédito do destinatário (cliente ou gestor)
+    if (destinatario.tipo === 'cliente') {
+      await criarTransacao(
+        destinatario.id,
+        'credito',
+        valor,
+        `Transferência recebida de cliente`,
+        'transferencia',
+        remetenteId
+      )
+    } else {
+      // Para gestor, criar transação na tabela de gestores (se existir)
+      // Por enquanto, apenas atualizar saldo da carteira do gestor
+      const { data: carteiraGestor } = await supabase
+        .from('carteira_x88_gestor')
+        .select('saldo')
+        .eq('gestor_id', destinatario.id)
+        .single()
 
-    return { success: true }
+      if (carteiraGestor) {
+        const novoSaldo = parseFloat(carteiraGestor.saldo) + valor
+        
+        await supabase
+          .from('carteira_x88_gestor')
+          .update({
+            saldo: novoSaldo.toString(),
+            total_recebido: supabase.raw(`total_recebido + ${valor}`),
+            atualizado_em: new Date().toISOString()
+          })
+          .eq('gestor_id', destinatario.id)
+      }
+    }
+
+    return { 
+      success: true, 
+      destinatario: {
+        nome: destinatario.nome,
+        tipo: destinatario.tipo
+      }
+    }
   } catch (error: any) {
     return { success: false, error: error.message }
   }
