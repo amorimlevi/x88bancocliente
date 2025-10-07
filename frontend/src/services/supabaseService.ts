@@ -103,50 +103,50 @@ export const criarTransacao = async (
 
 // Buscar destinatário por ID da carteira (pode ser cliente ou gestor)
 export const buscarDestinatarioPorIdCarteira = async (idCarteira: string) => {
-if (!supabase) {
-  return { success: false, error: 'Supabase não configurado' }
+  if (!supabase) {
+    return { success: false, error: 'Supabase não configurado' }
   }
 
-try {
-  // Buscar em carteira_x88 (clientes)
+  try {
+    // Buscar em carteira_x88 (clientes)
     const { data: carteiraCliente, error: errCliente } = await supabase
-    .from('carteira_x88')
-  .select('id, cliente_id, clientes(id, nome, email, dados_bancarios)')
-.eq('id', parseInt(idCarteira))
-.single()
+      .from('carteira_x88')
+      .select('id, cliente_id, clientes(id, nome, email, dados_bancarios)')
+      .eq('id', parseInt(idCarteira))
+      .maybeSingle()
 
-if (!errCliente && carteiraCliente) {
+    if (carteiraCliente && carteiraCliente.clientes) {
       return {
-    success: true,
+        success: true,
         destinatario: {
-      id: carteiraCliente.cliente_id,
+          id: String(carteiraCliente.id),
           nome: carteiraCliente.clientes.nome,
-      email: carteiraCliente.clientes.email,
-    dados_bancarios: carteiraCliente.clientes.dados_bancarios,
-      tipo: 'cliente'
+          email: carteiraCliente.clientes.email,
+          dados_bancarios: carteiraCliente.clientes.dados_bancarios,
+          tipo: 'cliente'
         }
-  }
-}
-
-// Buscar em carteira_x88_gestor (gestores)
-const { data: carteiraGestor, error: errGestor } = await supabase
-.from('carteira_x88_gestor')
-.select('id, gestor_id, gestores(id, nome_completo, email)')
-.eq('id', parseInt(idCarteira))
-.single()
-
-if (!errGestor && carteiraGestor) {
-return {
-  success: true,
-  destinatario: {
-    id: carteiraGestor.gestor_id,
-    nome: carteiraGestor.gestores.nome_completo,
-      email: carteiraGestor.gestores.email,
-          dados_bancarios: null, // Gestor pode ter dados bancários próprios
-      tipo: 'gestor'
       }
-  }
-  }
+    }
+
+    // Buscar em carteira_x88_gestor (gestores)
+    const { data: carteiraGestor, error: errGestor } = await supabase
+      .from('carteira_x88_gestor')
+      .select('id, gestor_id, gestores(id, nome_completo, email)')
+      .eq('id', parseInt(idCarteira))
+      .maybeSingle()
+
+    if (carteiraGestor && carteiraGestor.gestores) {
+      return {
+        success: true,
+        destinatario: {
+          id: String(carteiraGestor.id),
+          nome: carteiraGestor.gestores.nome_completo,
+          email: carteiraGestor.gestores.email,
+          dados_bancarios: null,
+          tipo: 'gestor'
+        }
+      }
+    }
 
     return { success: false, error: 'Destinatário não encontrado' }
   } catch (error: any) {

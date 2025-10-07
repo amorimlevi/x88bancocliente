@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { WalletIcon, UserPlusIcon } from '../ui/Icons'
+import { buscarDestinatarioPorIdCarteira } from '../../services/supabaseService'
 
 interface TransferirX88PageProps {
   saldoDisponivel: number
@@ -29,13 +30,16 @@ const TransferirX88Page = ({ saldoDisponivel, onSubmit, userId = '0001' }: Trans
         setUsuarioDestinatario(null)
         
         try {
-          const response = await fetch(`http://localhost:3002/api/usuario/${destinatarioId}`)
-          const data = await response.json()
+          const result = await buscarDestinatarioPorIdCarteira(destinatarioId)
           
-          if (data.success && data.usuario) {
-            setUsuarioDestinatario(data.usuario)
+          if (result.success && result.destinatario) {
+            setUsuarioDestinatario({
+              id: result.destinatario.id,
+              nome: result.destinatario.nome,
+              email: result.destinatario.email
+            })
           } else {
-            setErroUsuario('Usuário não encontrado')
+            setErroUsuario(result.error || 'Usuário não encontrado')
           }
         } catch (error) {
           setErroUsuario('Erro ao buscar usuário')
