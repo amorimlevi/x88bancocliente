@@ -120,6 +120,7 @@ export const buscarDestinatarioPorIdCarteira = async (idCarteira: string) => {
         success: true,
         destinatario: {
           id: String(carteiraCliente.id),
+          clienteId: carteiraCliente.cliente_id,
           nome: carteiraCliente.clientes.nome,
           email: carteiraCliente.clientes.email,
           dados_bancarios: carteiraCliente.clientes.dados_bancarios,
@@ -140,6 +141,7 @@ export const buscarDestinatarioPorIdCarteira = async (idCarteira: string) => {
         success: true,
         destinatario: {
           id: String(carteiraGestor.id),
+          gestorId: carteiraGestor.gestor_id,
           nome: carteiraGestor.gestores.nome_completo,
           email: carteiraGestor.gestores.email,
           dados_bancarios: null,
@@ -201,7 +203,7 @@ export const transferirX88 = async (
     // 4. Crédito do destinatário (cliente ou gestor)
     if (destinatario.tipo === 'cliente') {
       await criarTransacao(
-        destinatario.id,
+        (destinatario as any).clienteId,
         'credito',
         valor,
         `Transferência recebida de cliente`,
@@ -209,12 +211,11 @@ export const transferirX88 = async (
         remetenteId
       )
     } else {
-      // Para gestor, criar transação na tabela de gestores (se existir)
-      // Por enquanto, apenas atualizar saldo da carteira do gestor
+      // Para gestor, atualizar saldo da carteira do gestor
       const { data: carteiraGestor } = await supabase
         .from('carteira_x88_gestor')
         .select('saldo')
-        .eq('gestor_id', destinatario.id)
+        .eq('gestor_id', (destinatario as any).gestorId)
         .single()
 
       if (carteiraGestor) {
@@ -224,10 +225,10 @@ export const transferirX88 = async (
           .from('carteira_x88_gestor')
           .update({
             saldo: novoSaldo.toString(),
-            total_recebido: supabase.raw(`total_recebido + ${valor}`),
+            total_recebido: novoSaldo.toString(),
             atualizado_em: new Date().toISOString()
           })
-          .eq('gestor_id', destinatario.id)
+          .eq('gestor_id', (destinatario as any).gestorId)
       }
     }
 
