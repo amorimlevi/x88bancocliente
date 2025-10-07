@@ -121,6 +121,13 @@ export async function registrar(
         }
       }
 
+      if (error.message.includes('GESTOR')) {
+        return {
+          sucesso: false,
+          mensagem: 'Este email pertence a um gestor e não pode ser usado para criar conta de cliente'
+        }
+      }
+
       return {
         sucesso: false,
         mensagem: error.message
