@@ -55,18 +55,24 @@ export const criarTransacao = async (
   }
   
   try {
+    console.log('🔍 Buscando carteira para cliente:', clienteId)
     const { data: carteira, error: carteiraError } = await supabase
       .from('carteira_x88')
       .select('saldo')
       .eq('cliente_id', clienteId)
       .single()
 
-    if (carteiraError) throw carteiraError
+    if (carteiraError) {
+      console.error('❌ Erro ao buscar carteira:', carteiraError)
+      throw new Error(`Erro ao buscar carteira: ${carteiraError.message}`)
+    }
 
     const saldoAnterior = parseFloat(carteira.saldo)
     const saldoNovo = tipo === 'credito' 
       ? saldoAnterior + valor 
       : saldoAnterior - valor
+
+    console.log('💰 Criando transação:', { clienteId, tipo, valor, saldoAnterior, saldoNovo })
 
     const { data: transacao, error: transacaoError } = await supabase
       .from('transacoes_x88')
@@ -83,7 +89,12 @@ export const criarTransacao = async (
       .select()
       .single()
 
-    if (transacaoError) throw transacaoError
+    if (transacaoError) {
+      console.error('❌ Erro ao criar transação:', transacaoError)
+      throw new Error(`Erro ao criar transação: ${transacaoError.message}`)
+    }
+
+    console.log('✅ Transação criada, atualizando saldo...')
 
     const { error: updateError } = await supabase
       .from('carteira_x88')
@@ -93,10 +104,15 @@ export const criarTransacao = async (
       })
       .eq('cliente_id', clienteId)
 
-    if (updateError) throw updateError
+    if (updateError) {
+      console.error('❌ Erro ao atualizar saldo:', updateError)
+      throw new Error(`Erro ao atualizar saldo: ${updateError.message}`)
+    }
 
+    console.log('✅ Transação completa!')
     return { success: true, data: transacao }
   } catch (error: any) {
+    console.error('❌ Erro geral em criarTransacao:', error)
     return { success: false, error: error.message }
   }
 }
@@ -166,6 +182,8 @@ export const transferirX88 = async (
   }
 
   try {
+    console.log('💸 Iniciando transferência:', { remetenteId, destinatarioIdCarteira, valor })
+
     // 1. Buscar carteira do remetente (sempre cliente)
     const { data: carteiraRemetente, error: errRemetente } = await supabase
       .from('carteira_x88')
@@ -173,25 +191,33 @@ export const transferirX88 = async (
       .eq('cliente_id', remetenteId)
       .single()
 
-    if (errRemetente) throw errRemetente
+    if (errRemetente) {
+      console.error('❌ Erro ao buscar carteira remetente:', errRemetente)
+      throw new Error(`Erro ao buscar carteira: ${errRemetente.message}`)
+    }
 
     const saldoRemetente = parseFloat(carteiraRemetente.saldo)
+    console.log('💰 Saldo remetente:', saldoRemetente)
 
     if (saldoRemetente < valor) {
       throw new Error('Saldo insuficiente')
     }
 
     // 2. Buscar destinatário (pode ser cliente ou gestor)
+    console.log('🔍 Buscando destinatário...')
     const resultBusca = await buscarDestinatarioPorIdCarteira(destinatarioIdCarteira)
     
     if (!resultBusca.success || !resultBusca.destinatario) {
+      console.error('❌ Destinatário não encontrado')
       throw new Error('Destinatário não encontrado')
     }
 
     const destinatario = resultBusca.destinatario
+    console.log('✅ Destinatário encontrado:', destinatario.nome, 'Tipo:', destinatario.tipo)
 
     // 3. Débito do remetente
-    await criarTransacao(
+    console.log('⬇️ Debitando do remetente...')
+    const resultDebito = await criarTransacao(
       remetenteId,
       'debito',
       valor,
@@ -200,9 +226,15 @@ export const transferirX88 = async (
       destinatarioIdCarteira
     )
 
+    if (!resultDebito.success) {
+      console.error('❌ Erro ao debitar:', resultDebito.error)
+      throw new Error(resultDebito.error)
+    }
+
     // 4. Crédito do destinatário (cliente ou gestor)
+    console.log('⬆️ Creditando destinatário...')
     if (destinatario.tipo === 'cliente') {
-      await criarTransacao(
+      const resultCredito = await criarTransacao(
         (destinatario as any).clienteId,
         'credito',
         valor,
@@ -210,18 +242,28 @@ export const transferirX88 = async (
         'transferencia',
         remetenteId
       )
+
+      if (!resultCredito.success) {
+        console.error('❌ Erro ao creditar cliente:', resultCredito.error)
+        throw new Error(resultCredito.error)
+      }
     } else {
       // Para gestor, atualizar saldo da carteira do gestor
-      const { data: carteiraGestor } = await supabase
+      const { data: carteiraGestor, error: errGestor } = await supabase
         .from('carteira_x88_gestor')
         .select('saldo')
         .eq('gestor_id', (destinatario as any).gestorId)
         .single()
 
+      if (errGestor) {
+        console.error('❌ Erro ao buscar carteira gestor:', errGestor)
+        throw new Error(`Erro ao buscar carteira gestor: ${errGestor.message}`)
+      }
+
       if (carteiraGestor) {
         const novoSaldo = parseFloat(carteiraGestor.saldo) + valor
         
-        await supabase
+        const { error: updateErr } = await supabase
           .from('carteira_x88_gestor')
           .update({
             saldo: novoSaldo.toString(),
@@ -229,9 +271,15 @@ export const transferirX88 = async (
             atualizado_em: new Date().toISOString()
           })
           .eq('gestor_id', (destinatario as any).gestorId)
+
+        if (updateErr) {
+          console.error('❌ Erro ao atualizar carteira gestor:', updateErr)
+          throw new Error(`Erro ao atualizar carteira gestor: ${updateErr.message}`)
+        }
       }
     }
 
+    console.log('✅ Transferência completa!')
     return { 
       success: true, 
       destinatario: {
@@ -240,6 +288,7 @@ export const transferirX88 = async (
       }
     }
   } catch (error: any) {
+    console.error('❌ Erro geral em transferirX88:', error)
     return { success: false, error: error.message }
   }
 }
