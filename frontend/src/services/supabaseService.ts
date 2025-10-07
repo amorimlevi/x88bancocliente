@@ -74,18 +74,24 @@ export const criarTransacao = async (
 
     console.log('💰 Criando transação:', { clienteId, tipo, valor, saldoAnterior, saldoNovo })
 
+    const transacaoData: any = {
+      cliente_id: clienteId,
+      tipo,
+      valor: valor.toString(),
+      saldo_anterior: saldoAnterior.toString(),
+      saldo_novo: saldoNovo.toString(),
+      descricao,
+      categoria
+    }
+
+    // Apenas adicionar referencia_id se for um UUID válido
+    if (referenciaId && referenciaId.length > 10 && referenciaId.includes('-')) {
+      transacaoData.referencia_id = referenciaId
+    }
+
     const { data: transacao, error: transacaoError } = await supabase
       .from('transacoes_x88')
-      .insert({
-        cliente_id: clienteId,
-        tipo,
-        valor: valor.toString(),
-        saldo_anterior: saldoAnterior.toString(),
-        saldo_novo: saldoNovo.toString(),
-        descricao,
-        categoria,
-        referencia_id: referenciaId
-      })
+      .insert(transacaoData)
       .select()
       .single()
 
