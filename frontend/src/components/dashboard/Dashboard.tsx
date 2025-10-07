@@ -221,7 +221,7 @@ const Dashboard = ({ onLogout, dadosUsuario, userId = '0001' }: DashboardProps) 
           <TransferirX88Page
             saldoDisponivel={saldoX88}
             onSubmit={handleTransferenciaX88}
-            userId={userId}
+            userId={carteiraId}
           />
         )
       default:
