@@ -48,22 +48,6 @@ const Dashboard = ({ onLogout, dadosUsuario, userId = '0001' }: DashboardProps) 
   const { transacoes: transacoesSupabase } = useTransacoes(userId)
   const { solicitacoes } = useSolicitacoes(userId)
 
-  // Mostrar loading enquanto carrega dados essenciais
-  if (clienteLoading || carteiraLoading) {
-    return (
-      <div className="fixed inset-0 bg-white dark:bg-black flex items-center justify-center">
-        <div className="text-center">
-          <img 
-            src="https://res.cloudinary.com/dxchbdcai/image/upload/v1759416402/Design_sem_nome_9_z13spl.png" 
-            alt="X88"
-            className="w-20 h-20 mx-auto mb-4 animate-pulse"
-          />
-          <p className="text-neutral-500 dark:text-neutral-400">Carregando...</p>
-        </div>
-      </div>
-    )
-  }
-
   const carteiraId = carteira?.id ? String(carteira.id) : userId
 
   useEffect(() => {
@@ -95,6 +79,22 @@ const Dashboard = ({ onLogout, dadosUsuario, userId = '0001' }: DashboardProps) 
       })
     }
   }, [cliente])
+
+  // Mostrar loading enquanto carrega dados essenciais
+  if (clienteLoading || carteiraLoading) {
+    return (
+      <div className="fixed inset-0 bg-white dark:bg-black flex items-center justify-center">
+        <div className="text-center">
+          <img 
+            src="https://res.cloudinary.com/dxchbdcai/image/upload/v1759416402/Design_sem_nome_9_z13spl.png" 
+            alt="X88"
+            className="w-20 h-20 mx-auto mb-4 animate-pulse"
+          />
+          <p className="text-neutral-500 dark:text-neutral-400">Carregando...</p>
+        </div>
+      </div>
+    )
+  }
 
   const handleSalvarDadosBancarios = (dados: typeof dadosBancarios) => {
     setDadosBancarios(dados)

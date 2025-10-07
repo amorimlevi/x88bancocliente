@@ -21,67 +21,110 @@ function App() {
   const [creditoInicial, setCreditoInicial] = useState<number | undefined>(undefined)
   const [isNewAccount, setIsNewAccount] = useState(false)
 
-  // Verificar sessão ativa ao carregar o app
+  // Verificar sessão e escutar mudanças de autenticação
   useEffect(() => {
-    const verificarSessao = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession()
-        
-        if (session?.user) {
-          console.log('✅ Sessão ativa encontrada:', session.user.id)
-          
-          // Buscar dados do cliente
-          const { data: cliente, error } = await supabase
-            .from('clientes')
-            .select('id, email')
-            .eq('auth_id', session.user.id)
-            .single()
+    let mounted = true
+    let checkInterval: any
+    
+    // Timeout de segurança - máximo 2s de espera
+    const timeout = setTimeout(() => {
+      if (mounted) {
+        setIsLoading(false)
+      }
+    }, 2000)
 
-          if (!error && cliente) {
-            console.log('✅ Cliente encontrado:', cliente.id)
-            setUserId(cliente.id)
-            setIsAuthenticated(true)
-          } else {
-            console.error('❌ Cliente não encontrado para auth_id:', session.user.id)
+    // Verificar sessão existente e se usuário ainda existe
+    const checkSession = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession()
+        
+        if (!mounted) return
+
+        // Se houver erro ou não houver sessão, desloga
+        if (error || !session?.user) {
+          if (isAuthenticated) {
+            setIsAuthenticated(false)
+            setUserId('')
+            setSaldoInicial(undefined)
+            setCreditoInicial(undefined)
+            setIsNewAccount(false)
           }
-        } else {
-          console.log('ℹ️ Nenhuma sessão ativa')
+          return
+        }
+
+        // Verificar se o cliente ainda existe no banco
+        const { data, error: clienteError } = await supabase
+          .from('clientes')
+          .select('id')
+          .eq('auth_id', session.user.id)
+          .maybeSingle()
+
+        if (!mounted) return
+
+        // Se cliente não existe mais, desloga
+        if (clienteError || !data) {
+          if (isAuthenticated) {
+            setIsAuthenticated(false)
+            setUserId('')
+            setSaldoInicial(undefined)
+            setCreditoInicial(undefined)
+            setIsNewAccount(false)
+          }
+        } else if (data) {
+          setUserId(data.id)
+          setIsAuthenticated(true)
         }
       } catch (error) {
-        console.error('❌ Erro ao verificar sessão:', error)
+        console.error('Erro ao verificar sessão:', error)
+        if (isAuthenticated) {
+          setIsAuthenticated(false)
+          setUserId('')
+        }
       } finally {
-        setIsLoading(false)
+        if (mounted) {
+          clearTimeout(timeout)
+          setIsLoading(false)
+        }
       }
     }
 
-    verificarSessao()
+    // Verificação inicial
+    checkSession()
 
-    // Listener para mudanças na autenticação
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('🔐 Auth state changed:', event)
-      
-      if (event === 'SIGNED_OUT') {
-        handleLogout()
-      } else if (event === 'SIGNED_IN' && session?.user) {
-        const { data: cliente } = await supabase
-          .from('clientes')
-          .select('id, email')
-          .eq('auth_id', session.user.id)
-          .single()
+    // Verificar sessão a cada 3 segundos (detecta quando usuário é deletado do Supabase)
+    checkInterval = setInterval(() => {
+      if (mounted && isAuthenticated) {
+        checkSession()
+      }
+    }, 3000)
 
-        if (cliente) {
-          setUserId(cliente.id)
-          setIsAuthenticated(true)
-        }
-      } else if (event === 'USER_DELETED') {
-        handleLogout()
+    // Escutar mudanças na autenticação
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_OUT' || event === 'USER_DELETED') {
+        setIsAuthenticated(false)
+        setUserId('')
+        setSaldoInicial(undefined)
+        setCreditoInicial(undefined)
+        setIsNewAccount(false)
       }
     })
 
-    return () => {
-      subscription.unsubscribe()
+    // Verificar quando a janela ganha foco
+    const handleFocus = () => {
+      if (mounted) {
+        checkSession()
+      }
     }
-  }, [])
+    window.addEventListener('focus', handleFocus)
+
+    return () => {
+      mounted = false
+      clearTimeout(timeout)
+      clearInterval(checkInterval)
+      subscription.unsubscribe()
+      window.removeEventListener('focus', handleFocus)
+    }
+  }, [isAuthenticated])
 
   const handleLogin = (clienteId: string, email: string) => {
     setUserId(clienteId)
@@ -98,21 +141,12 @@ function App() {
   }
 
   const handleLogout = async () => {
-    try {
-      console.log('🚪 Fazendo logout...')
-      await supabase.auth.signOut()
-      console.log('✅ Logout realizado')
-    } catch (error) {
-      console.error('❌ Erro ao fazer logout:', error)
-    }
-    
+    await supabase.auth.signOut()
     setIsAuthenticated(false)
     setUserId('')
     setSaldoInicial(undefined)
     setCreditoInicial(undefined)
     setIsNewAccount(false)
-    localStorage.removeItem('clienteId')
-    localStorage.removeItem('email')
   }
 
   if (isLoading) {

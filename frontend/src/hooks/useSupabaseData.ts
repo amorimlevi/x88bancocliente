@@ -18,7 +18,7 @@ export const useCliente = (clienteId: string | null) => {
           .from('clientes')
           .select('*')
           .eq('id', clienteId)
-          .single()
+          .maybeSingle()
 
         if (error) throw error
         setCliente(data)
@@ -52,7 +52,7 @@ export const useCarteira = (clienteId: string | null) => {
           .from('carteira_x88')
           .select('*')
           .eq('cliente_id', clienteId)
-          .single()
+          .maybeSingle()
 
         if (error) throw error
         setCarteira(data)
@@ -90,7 +90,7 @@ export const useCarteira = (clienteId: string | null) => {
         .from('carteira_x88')
         .select('*')
         .eq('cliente_id', clienteId)
-        .single()
+        .maybeSingle()
 
       if (error) throw error
       setCarteira(data)
@@ -154,12 +154,11 @@ export const useTransacoes = (clienteId: string | null) => {
 
 export const useSolicitacoes = (clienteId: string | null) => {
   const [solicitacoes, setSolicitacoes] = useState<Solicitacao[]>([])
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     if (!clienteId || !supabase) {
-      setLoading(false)
       return
     }
 
@@ -171,12 +170,13 @@ export const useSolicitacoes = (clienteId: string | null) => {
           .eq('cliente_id', clienteId)
           .order('data_solicitacao', { ascending: false })
 
-        if (error) throw error
+        if (error) {
+          setSolicitacoes([])
+          return
+        }
         setSolicitacoes(data || [])
       } catch (err: any) {
-        setError(err.message)
-      } finally {
-        setLoading(false)
+        setSolicitacoes([])
       }
     }
 
