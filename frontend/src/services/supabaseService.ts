@@ -84,9 +84,12 @@ export const criarTransacao = async (
       categoria
     }
 
-    // Apenas adicionar referencia_id se for um UUID válido
-    if (referenciaId && referenciaId.length > 10 && referenciaId.includes('-')) {
-      transacaoData.referencia_id = referenciaId
+    // Adicionar referencia_id como inteiro se fornecido
+    if (referenciaId) {
+      const referenciaNum = parseInt(referenciaId)
+      if (!isNaN(referenciaNum)) {
+        transacaoData.referencia_id = referenciaNum
+      }
     }
 
     const { data: transacao, error: transacaoError } = await supabase
