@@ -76,6 +76,27 @@ export interface TransacaoX88 {
   referencia_id?: string
   realizado_por?: string
   criado_em: string
+  destinatario?: {
+    nome: string
+    email?: string
+    telefone?: string
+    id_carteira: number
+    tipo: 'cliente' | 'gestor'
+  }
+  cliente?: {
+    id: string
+    nome: string
+    email?: string
+    telefone?: string
+    id_carteira?: number
+  }
+  realizadoPor?: {
+    id: string
+    nome: string
+    email?: string
+    telefone?: string
+    id_carteira?: number
+  }
 }
 
 export interface Solicitacao {

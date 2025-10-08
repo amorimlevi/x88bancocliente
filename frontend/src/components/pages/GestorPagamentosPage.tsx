@@ -132,7 +132,7 @@ const GestorPagamentosPage = () => {
                       {pagamento.valorParcela.toFixed(2)} €
                     </h3>
                     <p className="text-sm text-neutral-500 dark:text-neutral-400">
-                      {pagamento.userName} (ID: {pagamento.userId})
+                      {pagamento.userName} (Conta: {pagamento.userId})
                     </p>
                   </div>
                   <span className="text-xs px-3 py-1 rounded-full bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300">
@@ -142,7 +142,7 @@ const GestorPagamentosPage = () => {
 
                 <div className="bg-neutral-50 dark:bg-neutral-800 rounded-xl p-4 mb-4 space-y-2">
                   <div className="flex justify-between">
-                    <span className="text-sm text-neutral-600 dark:text-neutral-400">ID do Empréstimo:</span>
+                    <span className="text-sm text-neutral-600 dark:text-neutral-400">Conta do Empréstimo:</span>
                     <span className="font-semibold text-black dark:text-white text-sm">
                       {pagamento.emprestimoId}
                     </span>

@@ -5,6 +5,7 @@ import EnderecoPage from './EnderecoPage'
 import NotificacoesPage from './NotificacoesPage'
 import SegurancaPage from './SegurancaPage'
 import { DadosUsuario } from '../auth/Cadastro'
+import { useTimezone, TIMEZONES } from '../../hooks/useTimezone'
 
 interface PerfilPageProps {
   onLogout?: () => void
@@ -25,6 +26,7 @@ const PerfilPage = ({ onLogout, dadosUsuario, userId = '0001', dadosBancarios, o
   const [mostrarEndereco, setMostrarEndereco] = useState(false)
   const [mostrarNotificacoes, setMostrarNotificacoes] = useState(false)
   const [mostrarSeguranca, setMostrarSeguranca] = useState(false)
+  const { timezone, setTimezone } = useTimezone()
 
   console.log('PerfilPage - userId:', userId)
   console.log('PerfilPage - dadosUsuario:', dadosUsuario)
@@ -92,7 +94,7 @@ const PerfilPage = ({ onLogout, dadosUsuario, userId = '0001', dadosBancarios, o
                 <UserIcon size="lg" className="text-brand-600 dark:text-brand-500" />
               </div>
               <div className="flex-1">
-                <p className="text-neutral-500 dark:text-neutral-400 text-xs mb-1">ID: {usuario.id}</p>
+                <p className="text-neutral-500 dark:text-neutral-400 text-xs mb-1">Conta: {usuario.id}</p>
                 <h2 className="text-black dark:text-white text-xl font-bold">{usuario.nome}</h2>
                 <p className="text-neutral-600 dark:text-neutral-400 text-sm">{usuario.email}</p>
               </div>
@@ -173,7 +175,7 @@ const PerfilPage = ({ onLogout, dadosUsuario, userId = '0001', dadosBancarios, o
             
             <button 
               onClick={() => setMostrarSeguranca(true)}
-              className="w-full p-4 flex items-center gap-3 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
+              className="w-full p-4 flex items-center gap-3 border-b border-neutral-100 dark:border-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
             >
               <div className="w-10 h-10 bg-brand-100 dark:bg-brand-900/30 rounded-full flex items-center justify-center">
                 <LockIcon size="md" className="text-brand-600 dark:text-brand-500" />
@@ -183,6 +185,29 @@ const PerfilPage = ({ onLogout, dadosUsuario, userId = '0001', dadosBancarios, o
                 <p className="text-neutral-500 dark:text-neutral-400 text-xs">Alterar senha e autenticação</p>
               </div>
             </button>
+
+            <div className="p-4">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-10 h-10 bg-brand-100 dark:bg-brand-900/30 rounded-full flex items-center justify-center">
+                  <span className="text-brand-600 dark:text-brand-500 text-lg">🌍</span>
+                </div>
+                <div className="flex-1">
+                  <p className="text-black dark:text-white font-medium">Fuso Horário</p>
+                  <p className="text-neutral-500 dark:text-neutral-400 text-xs">Escolha seu fuso horário</p>
+                </div>
+              </div>
+              <select
+                value={timezone}
+                onChange={(e) => setTimezone(e.target.value)}
+                className="w-full mt-2 p-3 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500"
+              >
+                {TIMEZONES.map(tz => (
+                  <option key={tz.value} value={tz.value}>
+                    {tz.label}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
         </div>
 

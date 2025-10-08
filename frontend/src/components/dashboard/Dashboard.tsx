@@ -106,11 +106,15 @@ const Dashboard = ({ onLogout, dadosUsuario, userId = '0001' }: DashboardProps) 
   
   const transacoes: Transacao[] = transacoesSupabase.map(t => ({
     id: t.id,
-    tipo: t.categoria === 'transferencia' ? 'transferencia' as const : 
+    tipo: t.tipo === 'credito' ? 'recebido' as const : 
+          t.tipo === 'debito' ? 'transferencia' as const :
+          t.categoria === 'transferencia' ? 'transferencia' as const : 
           t.tipo === 'credito' ? 'x88' as const : 'saque' as const,
-    valor: parseFloat(t.valor),
-    data: new Date(t.criado_em).toISOString().split('T')[0],
-    status: 'aprovado' as const
+    valor: typeof t.valor === 'string' ? parseFloat(t.valor) : t.valor,
+    data: t.data || (t.criado_em ? new Date(t.criado_em).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]),
+    status: 'aprovado' as const,
+    contraparte_nome: t.contraparte_nome,
+    contraparte_carteira_id: t.contraparte_carteira_id
   }))
 
   const solicitacoesPendentes = solicitacoes.filter(s => s.status === 'pendente')

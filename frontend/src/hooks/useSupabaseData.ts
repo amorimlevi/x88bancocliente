@@ -115,14 +115,41 @@ export const useTransacoes = (clienteId: string | null) => {
 
     const fetchTransacoes = async () => {
       try {
+        // Buscar o ID numérico do cliente pelo auth_id
+        const { data: userData } = await supabase.auth.getUser()
+        if (!userData.user) return
+
+        const { data: clienteData } = await supabase
+          .from('clientes')
+          .select('id')
+          .eq('auth_id', userData.user.id)
+          .maybeSingle()
+        
+        if (!clienteData) return
+
         const { data, error } = await supabase
           .from('transacoes_x88')
           .select('*')
-          .eq('cliente_id', clienteId)
+          .eq('cliente_id', clienteData.id)
           .order('criado_em', { ascending: false })
 
         if (error) throw error
-        setTransacoes(data || [])
+        
+        // Mapear para formato esperado pelo componente
+        const transacoesFormatadas = (data || []).map(transacao => ({
+          id: transacao.id.toString(),
+          tipo: transacao.tipo, // 'debito' ou 'credito'
+          categoria: transacao.categoria,
+          valor: transacao.valor,
+          criado_em: transacao.criado_em,
+          data: transacao.criado_em,
+          status: 'aprovado' as const,
+          contraparte_nome: transacao.contraparte_nome,
+          contraparte_carteira_id: transacao.contraparte_carteira_id,
+          descricao: transacao.descricao
+        }))
+        
+        setTransacoes(transacoesFormatadas)
       } catch (err: any) {
         setError(err.message)
       } finally {

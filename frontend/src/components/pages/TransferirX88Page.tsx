@@ -117,9 +117,9 @@ const TransferirX88Page = ({ saldoDisponivel, onSubmit, userId = '0001' }: Trans
           </div>
         </div>
 
-        {/* ID do Cliente */}
+        {/* Conta do Cliente */}
         <div className="bg-white dark:bg-neutral-900 p-4 rounded-2xl mb-6 border border-neutral-200 dark:border-neutral-800">
-          <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-1">Seu ID</p>
+          <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-1">Sua Conta</p>
           <p className="text-lg font-bold text-black dark:text-white font-mono tracking-wider">
             {userId}
           </p>
@@ -136,11 +136,11 @@ const TransferirX88Page = ({ saldoDisponivel, onSubmit, userId = '0001' }: Trans
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* ID do Destinatário */}
+          {/* Conta do Destinatário */}
           <div>
             <label htmlFor="destinatarioId" className="block text-sm font-semibold text-black dark:text-white mb-3 flex items-center gap-2">
               <UserPlusIcon size="sm" />
-              ID do Destinatário
+              Conta do Destinatário
             </label>
             <input
               type="text"
@@ -148,7 +148,7 @@ const TransferirX88Page = ({ saldoDisponivel, onSubmit, userId = '0001' }: Trans
               value={destinatarioId}
               onChange={(e) => setDestinatarioId(e.target.value)}
               className="input w-full text-lg"
-              placeholder="Digite o ID do destinatário"
+              placeholder="Digite a conta do destinatário"
               maxLength={6}
               required
             />
@@ -176,7 +176,7 @@ const TransferirX88Page = ({ saldoDisponivel, onSubmit, userId = '0001' }: Trans
                     <span className="font-semibold">Nome:</span> {usuarioDestinatario.nome}
                   </p>
                   <p className="text-sm text-green-800 dark:text-green-200">
-                    <span className="font-semibold">ID:</span> <span className="font-mono">{usuarioDestinatario.id}</span>
+                    <span className="font-semibold">Conta:</span> <span className="font-mono">{usuarioDestinatario.id}</span>
                   </p>
                 </div>
               </div>

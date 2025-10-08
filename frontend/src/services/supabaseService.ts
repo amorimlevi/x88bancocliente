@@ -193,26 +193,7 @@ export const transferirX88 = async (
   try {
     console.log('💸 Iniciando transferência:', { remetenteId, destinatarioIdCarteira, valor })
 
-    // 1. Buscar carteira do remetente (sempre cliente)
-    const { data: carteiraRemetente, error: errRemetente } = await supabase
-      .from('carteira_x88')
-      .select('saldo')
-      .eq('cliente_id', remetenteId)
-      .single()
-
-    if (errRemetente) {
-      console.error('❌ Erro ao buscar carteira remetente:', errRemetente)
-      throw new Error(`Erro ao buscar carteira: ${errRemetente.message}`)
-    }
-
-    const saldoRemetente = parseFloat(carteiraRemetente.saldo)
-    console.log('💰 Saldo remetente:', saldoRemetente)
-
-    if (saldoRemetente < valor) {
-      throw new Error('Saldo insuficiente')
-    }
-
-    // 2. Buscar destinatário (pode ser cliente ou gestor)
+    // 1. Buscar destinatário (pode ser cliente ou gestor)
     console.log('🔍 Buscando destinatário...')
     const resultBusca = await buscarDestinatarioPorIdCarteira(destinatarioIdCarteira)
     
@@ -224,77 +205,41 @@ export const transferirX88 = async (
     const destinatario = resultBusca.destinatario
     console.log('✅ Destinatário encontrado:', destinatario.nome, 'Tipo:', destinatario.tipo)
 
-    // 3. Débito do remetente
-    console.log('⬇️ Debitando do remetente...')
-    const resultDebito = await criarTransacao(
-      remetenteId,
-      'debito',
-      valor,
-      `Transferência para ${destinatario.nome}`,
-      'transferencia',
-      destinatarioIdCarteira
-    )
+    // 2. Executar função SQL registrar_transferencia_x88
+    const destinatarioTipo = destinatario.tipo
+    const destinatarioId = destinatario.tipo === 'cliente' 
+      ? (destinatario as any).clienteId 
+      : (destinatario as any).gestorId
 
-    if (!resultDebito.success) {
-      console.error('❌ Erro ao debitar:', resultDebito.error)
-      throw new Error(resultDebito.error)
+    console.log('📞 Chamando função SQL registrar_transferencia_x88...')
+    const { data, error } = await supabase.rpc('registrar_transferencia_x88', {
+      p_remetente_tipo: 'cliente',
+      p_remetente_id: parseInt(remetenteId),
+      p_destinatario_tipo: destinatarioTipo,
+      p_destinatario_id: parseInt(destinatarioId),
+      p_valor: valor,
+      p_categoria: 'transferencia',
+      p_descricao: `Transferência para ${destinatario.nome}`
+    })
+
+    if (error) {
+      console.error('❌ Erro ao chamar função SQL:', error)
+      throw new Error(error.message)
     }
 
-    // 4. Crédito do destinatário (cliente ou gestor)
-    console.log('⬆️ Creditando destinatário...')
-    if (destinatario.tipo === 'cliente') {
-      const resultCredito = await criarTransacao(
-        (destinatario as any).clienteId,
-        'credito',
-        valor,
-        `Transferência recebida de cliente`,
-        'transferencia',
-        remetenteId
-      )
-
-      if (!resultCredito.success) {
-        console.error('❌ Erro ao creditar cliente:', resultCredito.error)
-        throw new Error(resultCredito.error)
-      }
-    } else {
-      // Para gestor, atualizar saldo da carteira do gestor
-      const { data: carteiraGestor, error: errGestor } = await supabase
-        .from('carteira_x88_gestor')
-        .select('saldo')
-        .eq('gestor_id', (destinatario as any).gestorId)
-        .single()
-
-      if (errGestor) {
-        console.error('❌ Erro ao buscar carteira gestor:', errGestor)
-        throw new Error(`Erro ao buscar carteira gestor: ${errGestor.message}`)
-      }
-
-      if (carteiraGestor) {
-        const novoSaldo = parseFloat(carteiraGestor.saldo) + valor
-        
-        const { error: updateErr } = await supabase
-          .from('carteira_x88_gestor')
-          .update({
-            saldo: novoSaldo.toString(),
-            total_recebido: novoSaldo.toString(),
-            atualizado_em: new Date().toISOString()
-          })
-          .eq('gestor_id', (destinatario as any).gestorId)
-
-        if (updateErr) {
-          console.error('❌ Erro ao atualizar carteira gestor:', updateErr)
-          throw new Error(`Erro ao atualizar carteira gestor: ${updateErr.message}`)
-        }
-      }
+    if (!data || !data.sucesso) {
+      console.error('❌ Função retornou erro:', data?.mensagem)
+      throw new Error(data?.mensagem || 'Erro ao processar transferência')
     }
 
-    console.log('✅ Transferência completa!')
+    console.log('✅ Transferência completa!', data)
     return { 
       success: true, 
       destinatario: {
         nome: destinatario.nome,
         tipo: destinatario.tipo
-      }
+      },
+      data
     }
   } catch (error: any) {
     console.error('❌ Erro geral em transferirX88:', error)

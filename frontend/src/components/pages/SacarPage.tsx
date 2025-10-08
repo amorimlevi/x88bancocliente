@@ -61,9 +61,9 @@ const SacarPage = ({ saldoDisponivel, creditoDisponivel, taxaConversao, onSubmit
           </div>
         </div>
 
-        {/* ID do Cliente */}
+        {/* Conta do Cliente */}
         <div className="bg-white dark:bg-neutral-900 p-4 rounded-2xl mb-6 border border-neutral-200 dark:border-neutral-800">
-          <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-1">Seu ID</p>
+          <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-1">Sua Conta</p>
           <p className="text-lg font-bold text-black dark:text-white font-mono tracking-wider">
             {userId}
           </p>

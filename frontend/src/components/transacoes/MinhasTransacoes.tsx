@@ -1,8 +1,9 @@
 import { CheckIcon, XIcon, ClockIcon, ArrowDownIcon, CreditCardIcon, ArrowUpIcon } from '../ui/Icons'
+import { useTimezone } from '../../hooks/useTimezone'
 
 interface Transacao {
   id: string
-  tipo: 'saque' | 'credito' | 'recebido' | 'transferencia' | 'x88'
+  tipo: 'saque' | 'credito' | 'debito' | 'recebido' | 'transferencia' | 'x88'
   valor: number
   valorEuro?: number
   telefone?: string
@@ -18,6 +19,8 @@ interface Transacao {
   remetenteNome?: string
   destinatarioId?: string
   destinatarioNome?: string
+  contraparte_nome?: string
+  contraparte_carteira_id?: number
 }
 
 interface MinhasTransacoesProps {
@@ -26,6 +29,8 @@ interface MinhasTransacoesProps {
 }
 
 const MinhasTransacoes = ({ transacoes, semLimite = false }: MinhasTransacoesProps) => {
+  const { formatDate, formatTime } = useTimezone()
+  
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'aprovado':
@@ -55,6 +60,10 @@ const MinhasTransacoes = ({ transacoes, semLimite = false }: MinhasTransacoesPro
     }
     
     switch (tipo) {
+      case 'debito':
+        return <ArrowUpIcon size="md" className="text-red-600 dark:text-red-500" />
+      case 'credito':
+        return <ArrowDownIcon size="md" className="text-green-600 dark:text-green-500" />
       case 'saque':
         return <ArrowDownIcon size="md" className="text-brand-600 dark:text-brand-500" />
       case 'transferencia':
@@ -75,6 +84,10 @@ const MinhasTransacoes = ({ transacoes, semLimite = false }: MinhasTransacoesPro
     }
     
     switch (tipo) {
+      case 'debito':
+        return 'Transferência X88'
+      case 'credito':
+        return 'X88 Recebido'
       case 'saque':
         return 'Saque MBway'
       case 'transferencia':
@@ -86,15 +99,6 @@ const MinhasTransacoes = ({ transacoes, semLimite = false }: MinhasTransacoesPro
       default:
         return 'Solicitação de Empréstimo'
     }
-  }
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString + 'T00:00:00')
-    return date.toLocaleDateString('pt-PT', { 
-      day: '2-digit', 
-      month: '2-digit', 
-      year: 'numeric' 
-    })
   }
 
   const transacoesFiltradas = transacoes.filter(t => t.tipo !== 'saque' || t.telefone?.includes('Transferência X88') || t.telefone?.startsWith('ID:'))
@@ -122,8 +126,10 @@ const MinhasTransacoes = ({ transacoes, semLimite = false }: MinhasTransacoesPro
               <div className="flex items-start gap-3">
                 {/* Ícone do Tipo */}
                 <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
-                  (transacao.tipo === 'transferencia' || (transacao.tipo === 'saque' && (transacao.telefone?.includes('Transferência X88') || transacao.telefone?.startsWith('ID:'))))
+                  transacao.tipo === 'debito' || (transacao.tipo === 'transferencia' || (transacao.tipo === 'saque' && (transacao.telefone?.includes('Transferência X88') || transacao.telefone?.startsWith('ID:'))))
                     ? 'bg-red-100 dark:bg-red-950'
+                    : transacao.tipo === 'credito'
+                    ? 'bg-green-100 dark:bg-green-950'
                     : transacao.tipo === 'saque' 
                     ? 'bg-brand-100 dark:bg-brand-950' 
                     : 'bg-neutral-100 dark:bg-neutral-800'
@@ -144,20 +150,20 @@ const MinhasTransacoes = ({ transacoes, semLimite = false }: MinhasTransacoesPro
 
                   <p 
                      style={{
-                       color: (transacao.tipo === 'x88' || transacao.tipo === 'credito') && transacao.status === 'pendente'
+                       color: (transacao.tipo === 'x88') && transacao.status === 'pendente'
                          ? '#fcc508'
                          : undefined
                      }}
                      className={`font-bold text-lg mb-1 ${
-                       (transacao.tipo === 'x88' || transacao.tipo === 'credito') && transacao.status === 'pendente'
+                       transacao.tipo === 'x88' && transacao.status === 'pendente'
                          ? ''
-                         : transacao.tipo === 'recebido'
+                         : transacao.tipo === 'recebido' || transacao.tipo === 'credito'
                          ? 'text-green-600 dark:text-green-500'
-                         : (transacao.tipo === 'transferencia' || (transacao.tipo === 'saque' && (transacao.telefone?.includes('Transferência X88') || transacao.telefone?.startsWith('ID:'))))
+                         : (transacao.tipo === 'debito' || transacao.tipo === 'transferencia' || (transacao.tipo === 'saque' && (transacao.telefone?.includes('Transferência X88') || transacao.telefone?.startsWith('ID:'))))
                          ? 'text-red-600 dark:text-red-500' 
                          : 'text-brand-600 dark:text-brand-500'
                   }`}>
-                    {(transacao.tipo === 'transferencia' || (transacao.tipo === 'saque' && (transacao.telefone?.includes('Transferência X88') || transacao.telefone?.startsWith('ID:')))) ? '-' : transacao.tipo === 'recebido' ? '+' : ''}{transacao.valor.toLocaleString('pt-PT')} X88
+                    {(transacao.tipo === 'debito' || transacao.tipo === 'transferencia' || (transacao.tipo === 'saque' && (transacao.telefone?.includes('Transferência X88') || transacao.telefone?.startsWith('ID:')))) ? '-' : (transacao.tipo === 'recebido' || transacao.tipo === 'credito') ? '+' : ''}{transacao.valor.toLocaleString('pt-PT')} X88
                   </p>
                   
                   {transacao.valorEuro && (
@@ -166,17 +172,15 @@ const MinhasTransacoes = ({ transacoes, semLimite = false }: MinhasTransacoesPro
                     </p>
                   )}
 
-                  {transacao.tipo === 'transferencia' && transacao.destinatarioId && (
-                    <p className="text-neutral-500 dark:text-neutral-400 text-xs flex items-center gap-1">
-                      <span>👤</span>
-                      <span>Para: {transacao.destinatarioNome || 'Usuário'} (ID: {transacao.destinatarioId})</span>
+                  {(transacao.tipo === 'debito' || transacao.tipo === 'transferencia') && (transacao.destinatarioId || transacao.contraparte_nome) && (
+                    <p className="text-neutral-500 dark:text-neutral-400 text-xs">
+                      Para: {transacao.contraparte_nome || transacao.destinatarioNome || 'Usuário'} (Conta: {transacao.contraparte_carteira_id || transacao.destinatarioId})
                     </p>
                   )}
 
-                  {transacao.tipo === 'recebido' && transacao.remetenteId && (
-                    <p className="text-neutral-500 dark:text-neutral-400 text-xs flex items-center gap-1">
-                      <span>👤</span>
-                      <span>De: {transacao.remetenteNome || 'Usuário'} (ID: {transacao.remetenteId})</span>
+                  {(transacao.tipo === 'credito' || transacao.tipo === 'recebido') && (transacao.remetenteId || transacao.contraparte_nome) && (
+                    <p className="text-neutral-500 dark:text-neutral-400 text-xs">
+                      De: {transacao.contraparte_nome || transacao.remetenteNome || 'Usuário'} (Conta: {transacao.contraparte_carteira_id || transacao.remetenteId})
                     </p>
                   )}
 
@@ -188,7 +192,7 @@ const MinhasTransacoes = ({ transacoes, semLimite = false }: MinhasTransacoesPro
                   )}
 
                   <p className="text-neutral-400 dark:text-neutral-500 text-xs mt-2">
-                    {formatDate(transacao.data)}
+                    {formatDate(transacao.data)} às {formatTime(transacao.data)}
                   </p>
                 </div>
               </div>
