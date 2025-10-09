@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react'
 import { Html5QrcodeScanner } from 'html5-qrcode'
+import { transferirX88 } from '../../services/supabaseService'
 
 interface PagarModalProps {
   isOpen: boolean
   onClose: () => void
   onScanQR: () => void
   onDigitarId: () => void
+  userId: string
 }
 
 interface DadosPagamento {
@@ -14,7 +16,7 @@ interface DadosPagamento {
   nomeUsuario?: string
 }
 
-const PagarModal: React.FC<PagarModalProps> = ({ isOpen, onClose }) => {
+const PagarModal: React.FC<PagarModalProps> = ({ isOpen, onClose, userId }) => {
   const [escaneando, setEscaneando] = useState(false)
   const [dadosPagamento, setDadosPagamento] = useState<DadosPagamento | null>(null)
   const [confirmando, setConfirmando] = useState(false)
@@ -123,13 +125,23 @@ const PagarModal: React.FC<PagarModalProps> = ({ isOpen, onClose }) => {
     if (!dadosPagamento) return
 
     try {
-      // TODO: Implementar lógica de transferência via API
-      console.log('Pagamento confirmado:', dadosPagamento)
-      alert(`Pagamento de ${dadosPagamento.valor} X88 para ${dadosPagamento.nomeUsuario || dadosPagamento.contaId} realizado com sucesso!`)
-      handleFechar()
-    } catch (err) {
-      console.error('Erro ao realizar pagamento:', err)
-      alert('Erro ao realizar pagamento. Tente novamente.')
+      console.log('💸 Iniciando pagamento via QR Code:', dadosPagamento)
+      
+      const resultado = await transferirX88(
+        userId,
+        dadosPagamento.contaId,
+        dadosPagamento.valor
+      )
+
+      if (resultado.success) {
+        alert(`✅ Pagamento de ${dadosPagamento.valor} X88 para ${dadosPagamento.nomeUsuario || dadosPagamento.contaId} realizado com sucesso!`)
+        handleFechar()
+      } else {
+        throw new Error(resultado.error || 'Erro ao processar pagamento')
+      }
+    } catch (err: any) {
+      console.error('❌ Erro ao realizar pagamento:', err)
+      alert(`Erro ao realizar pagamento: ${err.message || 'Tente novamente'}`)
     }
   }
 
@@ -196,10 +208,10 @@ const PagarModal: React.FC<PagarModalProps> = ({ isOpen, onClose }) => {
             <div id="qr-reader" className="mb-4 rounded-xl overflow-hidden qr-reader-custom"></div>
 
             <button
-              onClick={handleVoltar}
+              onClick={handleFechar}
               className="w-full py-3 px-4 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 rounded-xl font-semibold transition-colors"
             >
-              Voltar
+              Cancelar
             </button>
 
             <style>{`

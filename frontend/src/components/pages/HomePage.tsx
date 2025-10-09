@@ -258,6 +258,7 @@ const HomePage = ({
         onDigitarId={() => {
           onNavigate('transferir-x88')
         }}
+        userId={userId}
       />
 
       <TransferirModal
