@@ -159,13 +159,16 @@ const Dashboard = ({ onLogout, dadosUsuario, userId = '0001' }: DashboardProps) 
     setPaginaAtual('inicio')
   }
 
-  const handleTransferenciaX88 = async (destinatarioId: string, valor: number, destinatarioNome?: string) => {
+  const handleTransferenciaX88 = async (destinatarioId: string, valor: number, destinatarioNome?: string, onSuccess?: (dados: any) => void) => {
     if (!cliente) return
 
     const result = await transferirX88(cliente.id, destinatarioId, valor)
     
     if (result.success) {
       await atualizarCarteira()
+      onSuccess?.({})
+    } else {
+      alert(`Erro: ${result.error || 'Não foi possível realizar a transferência'}`)
     }
   }
 

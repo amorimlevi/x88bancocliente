@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Html5QrcodeScanner } from 'html5-qrcode'
 import { transferirX88 } from '../../services/supabaseService'
+import ComprovanteTransferenciaModal from './ComprovanteTransferenciaModal'
 
 interface PagarModalProps {
   isOpen: boolean
@@ -8,6 +9,8 @@ interface PagarModalProps {
   onScanQR: () => void
   onDigitarId: () => void
   userId: string
+  remetenteConta: string
+  remetenteNome: string
 }
 
 interface DadosPagamento {
@@ -17,11 +20,13 @@ interface DadosPagamento {
   nomeUsuario?: string
 }
 
-const PagarModal: React.FC<PagarModalProps> = ({ isOpen, onClose, userId }) => {
+const PagarModal: React.FC<PagarModalProps> = ({ isOpen, onClose, userId, remetenteConta, remetenteNome }) => {
   const [escaneando, setEscaneando] = useState(false)
   const [dadosPagamento, setDadosPagamento] = useState<DadosPagamento | null>(null)
   const [confirmando, setConfirmando] = useState(false)
   const [scanner, setScanner] = useState<Html5QrcodeScanner | null>(null)
+  const [comprovanteAberto, setComprovanteAberto] = useState(false)
+  const [dadosComprovante, setDadosComprovante] = useState<any>(null)
 
   useEffect(() => {
     if (isOpen && escaneando) {
@@ -132,8 +137,28 @@ const PagarModal: React.FC<PagarModalProps> = ({ isOpen, onClose, userId }) => {
       )
 
       if (resultado.success) {
-        alert(`Pagamento de ${dadosPagamento.valor} X88 realizado com sucesso!`)
-        handleFechar()
+        const agora = new Date()
+        const dataFormatada = agora.toLocaleString('pt-PT', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        })
+
+        setDadosComprovante({
+          valor: dadosPagamento.valor,
+          destinatarioNome: dadosPagamento.nomeUsuario || 'Destinatário',
+          destinatarioConta: dadosPagamento.contaNumero || dadosPagamento.contaId,
+          data: dataFormatada,
+          remetenteConta: remetenteConta,
+          remetenteNome: remetenteNome
+        })
+        
+        setEscaneando(false)
+        setConfirmando(false)
+        setDadosPagamento(null)
+        setComprovanteAberto(true)
       } else {
         alert(`Erro: ${resultado.error || 'Não foi possível processar o pagamento'}`)
       }
@@ -306,6 +331,16 @@ const PagarModal: React.FC<PagarModalProps> = ({ isOpen, onClose, userId }) => {
           </>
         ) : null}
       </div>
+
+      {/* Modal de Comprovante */}
+      <ComprovanteTransferenciaModal
+        isOpen={comprovanteAberto}
+        onClose={() => {
+          setComprovanteAberto(false)
+          onClose()
+        }}
+        dadosTransferencia={dadosComprovante}
+      />
     </div>
   )
 }

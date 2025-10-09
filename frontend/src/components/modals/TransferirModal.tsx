@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react'
 import { buscarDestinatarioPorIdCarteira } from '../../services/supabaseService'
+import ComprovanteTransferenciaModal from './ComprovanteTransferenciaModal'
 
 interface TransferirModalProps {
   isOpen: boolean
   onClose: () => void
   saldoDisponivel: number
-  onSubmit: (destinatarioId: string, valor: number, destinatarioNome?: string) => void
+  onSubmit: (destinatarioId: string, valor: number, destinatarioNome?: string, onSuccess?: (dados: any) => void) => void
   userId?: string
+  remetenteConta?: string
+  remetenteNome?: string
 }
 
 interface UsuarioDestinatario {
@@ -20,13 +23,17 @@ const TransferirModal: React.FC<TransferirModalProps> = ({
   onClose, 
   saldoDisponivel, 
   onSubmit, 
-  userId = '0001' 
+  userId = '0001',
+  remetenteConta = '0001',
+  remetenteNome = 'Usuário'
 }) => {
   const [destinatarioId, setDestinatarioId] = useState('')
   const [valorX88, setValorX88] = useState('')
   const [usuarioDestinatario, setUsuarioDestinatario] = useState<UsuarioDestinatario | null>(null)
   const [buscandoUsuario, setBuscandoUsuario] = useState(false)
   const [erroUsuario, setErroUsuario] = useState('')
+  const [comprovanteAberto, setComprovanteAberto] = useState(false)
+  const [dadosComprovante, setDadosComprovante] = useState<any>(null)
 
   useEffect(() => {
     const buscarUsuario = async () => {
@@ -69,11 +76,31 @@ const TransferirModal: React.FC<TransferirModalProps> = ({
         alert('Saldo insuficiente!')
         return
       }
-      onSubmit(destinatarioId, Number(valorX88), usuarioDestinatario?.nome)
-      setDestinatarioId('')
-      setValorX88('')
-      setUsuarioDestinatario(null)
-      onClose()
+      
+      onSubmit(destinatarioId, Number(valorX88), usuarioDestinatario?.nome, () => {
+        const agora = new Date()
+        const dataFormatada = agora.toLocaleString('pt-PT', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        })
+
+        setDadosComprovante({
+          valor: Number(valorX88),
+          destinatarioNome: usuarioDestinatario?.nome || 'Destinatário',
+          destinatarioConta: destinatarioId,
+          data: dataFormatada,
+          remetenteConta: remetenteConta,
+          remetenteNome: remetenteNome
+        })
+        
+        setDestinatarioId('')
+        setValorX88('')
+        setUsuarioDestinatario(null)
+        setComprovanteAberto(true)
+      })
     }
   }
 
@@ -274,6 +301,16 @@ const TransferirModal: React.FC<TransferirModalProps> = ({
           </form>
         </div>
       </div>
+
+      {/* Modal de Comprovante */}
+      <ComprovanteTransferenciaModal
+        isOpen={comprovanteAberto}
+        onClose={() => {
+          setComprovanteAberto(false)
+          onClose()
+        }}
+        dadosTransferencia={dadosComprovante}
+      />
     </div>
   )
 }

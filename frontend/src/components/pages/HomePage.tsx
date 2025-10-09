@@ -17,7 +17,7 @@ interface HomePageProps {
   clienteId?: string
   nomeUsuario?: string
   onModalChange?: (isOpen: boolean) => void
-  onTransferir?: (destinatarioId: string, valor: number, destinatarioNome?: string) => void
+  onTransferir?: (destinatarioId: string, valor: number, destinatarioNome?: string, onSuccess?: (dados: any) => void) => void
 }
 
 const HomePage = ({
@@ -262,16 +262,20 @@ const HomePage = ({
           onNavigate('transferir-x88')
         }}
         userId={clienteId || userId}
+        remetenteConta={userId}
+        remetenteNome={nomeUsuario}
       />
 
       <TransferirModal
         isOpen={modalTransferir}
         onClose={() => setModalTransferir(false)}
         saldoDisponivel={saldoX88}
-        onSubmit={(destinatarioId, valor, destinatarioNome) => {
-          onTransferir?.(destinatarioId, valor, destinatarioNome)
+        onSubmit={(destinatarioId, valor, destinatarioNome, onSuccess) => {
+          onTransferir?.(destinatarioId, valor, destinatarioNome, onSuccess)
         }}
         userId={userId}
+        remetenteConta={userId}
+        remetenteNome={nomeUsuario}
       />
     </div>
   )
