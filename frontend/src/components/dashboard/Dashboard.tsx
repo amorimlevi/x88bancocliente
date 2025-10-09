@@ -159,14 +159,13 @@ const Dashboard = ({ onLogout, dadosUsuario, userId = '0001' }: DashboardProps) 
     setPaginaAtual('inicio')
   }
 
-  const handleTransferenciaX88 = async (destinatarioId: string, valor: number) => {
+  const handleTransferenciaX88 = async (destinatarioId: string, valor: number, destinatarioNome?: string) => {
     if (!cliente) return
 
     const result = await transferirX88(cliente.id, destinatarioId, valor)
     
     if (result.success) {
       await atualizarCarteira()
-      setPaginaAtual('inicio')
     }
   }
 
@@ -192,6 +191,7 @@ const Dashboard = ({ onLogout, dadosUsuario, userId = '0001' }: DashboardProps) 
             userId={carteiraId}
             nomeUsuario={cliente?.nome_completo || cliente?.nome || dadosUsuario?.nome || 'Usuário'}
             onModalChange={setModalAberto}
+            onTransferir={handleTransferenciaX88}
           />
         )
       case 'sacar':

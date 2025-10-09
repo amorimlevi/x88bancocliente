@@ -3,6 +3,7 @@ import MinhasTransacoes from '../transacoes/MinhasTransacoes'
 import AcoesRapidas from '../ui/AcoesRapidas'
 import ReceberModal from '../modals/ReceberModal'
 import PagarModal from '../modals/PagarModal'
+import TransferirModal from '../modals/TransferirModal'
 import { useState, useEffect } from 'react'
 
 interface HomePageProps {
@@ -15,6 +16,7 @@ interface HomePageProps {
   userId?: string
   nomeUsuario?: string
   onModalChange?: (isOpen: boolean) => void
+  onTransferir?: (destinatarioId: string, valor: number, destinatarioNome?: string) => void
 }
 
 const HomePage = ({
@@ -26,17 +28,19 @@ const HomePage = ({
   onNavigate,
   userId = '0001',
   nomeUsuario = 'Usuário',
-  onModalChange
+  onModalChange,
+  onTransferir
 }: HomePageProps) => {
   const [copiado, setCopiado] = useState(false)
   const [modalReceber, setModalReceber] = useState(false)
   const [modalPagar, setModalPagar] = useState(false)
+  const [modalTransferir, setModalTransferir] = useState(false)
 
   // Notificar quando modais abrem/fecham
   useEffect(() => {
-    const modalAberto = modalReceber || modalPagar
+    const modalAberto = modalReceber || modalPagar || modalTransferir
     onModalChange?.(modalAberto)
-  }, [modalReceber, modalPagar, onModalChange])
+  }, [modalReceber, modalPagar, modalTransferir, onModalChange])
 
   const copiarNumeroConta = async () => {
     try {
@@ -83,7 +87,7 @@ const HomePage = ({
       titulo: 'Transferir',
       cor: '#E8E8E8',
       corIcone: '#1F2937',
-      onClick: () => onNavigate('transferir-x88')
+      onClick: () => setModalTransferir(true)
     },
     {
       id: 'extrato',
@@ -254,6 +258,16 @@ const HomePage = ({
         onDigitarId={() => {
           onNavigate('transferir-x88')
         }}
+      />
+
+      <TransferirModal
+        isOpen={modalTransferir}
+        onClose={() => setModalTransferir(false)}
+        saldoDisponivel={saldoX88}
+        onSubmit={(destinatarioId, valor, destinatarioNome) => {
+          onTransferir?.(destinatarioId, valor, destinatarioNome)
+        }}
+        userId={userId}
       />
     </div>
   )

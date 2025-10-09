@@ -28,9 +28,13 @@ const PagarModal: React.FC<PagarModalProps> = ({ isOpen, onClose }) => {
           fps: 10, 
           qrbox: { width: 250, height: 250 },
           aspectRatio: 1.0,
-          showTorchButtonIfSupported: true
+          showTorchButtonIfSupported: true,
+          videoConstraints: {
+            facingMode: "environment"
+          },
+          rememberLastUsedCamera: true
         },
-        false
+        /* verbose= */ false
       )
 
       html5QrcodeScanner.render(
@@ -159,7 +163,7 @@ const PagarModal: React.FC<PagarModalProps> = ({ isOpen, onClose }) => {
               </p>
             </div>
 
-            <div id="qr-reader" className="mb-4 rounded-xl overflow-hidden"></div>
+            <div id="qr-reader" className="mb-4 rounded-xl overflow-hidden qr-reader-custom"></div>
 
             <button
               onClick={handleVoltar}
@@ -167,6 +171,37 @@ const PagarModal: React.FC<PagarModalProps> = ({ isOpen, onClose }) => {
             >
               Voltar
             </button>
+
+            <style>{`
+              #qr-reader__dashboard_section_csr {
+                display: none !important;
+              }
+              
+              #qr-reader__camera_selection {
+                display: none !important;
+              }
+
+              #qr-reader__dashboard_section_swaplink {
+                display: none !important;
+              }
+
+              #qr-reader__camera_permission_button {
+                background: #eab308 !important;
+                color: black !important;
+                padding: 12px 24px !important;
+                border-radius: 12px !important;
+                font-weight: 600 !important;
+                border: none !important;
+              }
+
+              .qr-reader-custom video {
+                border-radius: 12px !important;
+              }
+
+              #qr-reader__scan_region {
+                border-radius: 12px !important;
+              }
+            `}</style>
           </>
         ) : confirmando && dadosPagamento ? (
           <>
