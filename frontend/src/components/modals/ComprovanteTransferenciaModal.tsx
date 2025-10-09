@@ -1,5 +1,6 @@
 import React, { useRef } from 'react'
 import html2canvas from 'html2canvas'
+import { useTimezone } from '../../hooks/useTimezone'
 
 interface ComprovanteTransferenciaModalProps {
   isOpen: boolean
@@ -8,9 +9,12 @@ interface ComprovanteTransferenciaModalProps {
     valor: number
     destinatarioNome: string
     destinatarioConta: string
-    data: string
+    destinatarioEmail?: string
+    destinatarioTelefone?: string
     remetenteConta: string
     remetenteNome: string
+    remetenteEmail?: string
+    remetenteTelefone?: string
   } | null
 }
 
@@ -20,8 +24,11 @@ const ComprovanteTransferenciaModal: React.FC<ComprovanteTransferenciaModalProps
   dadosTransferencia
 }) => {
   const comprovanteRef = useRef<HTMLDivElement>(null)
+  const { formatDateTime, formatCurrency } = useTimezone()
 
   if (!isOpen || !dadosTransferencia) return null
+
+  const dataHoraFormatada = formatDateTime(new Date().toISOString())
 
   const handleCompartilhar = async () => {
     if (!comprovanteRef.current) return
@@ -69,57 +76,89 @@ const ComprovanteTransferenciaModal: React.FC<ComprovanteTransferenciaModalProps
       >
         {/* Comprovante */}
         <div ref={comprovanteRef} className="bg-white dark:bg-neutral-900 p-6">
-          {/* Ícone de Sucesso */}
-          <div className="text-center mb-6">
-            <div className="w-16 h-16 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg className="w-8 h-8 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-              </svg>
-            </div>
-            <h3 className="text-2xl font-bold text-green-600 dark:text-green-500 mb-1">
-              Transferência Realizada
+          {/* Logo e Título */}
+          <div className="text-center mb-6 pb-6 border-b border-neutral-200 dark:border-neutral-800">
+            <img 
+              src="https://res.cloudinary.com/dxchbdcai/image/upload/v1759251700/LOGOTIPO_X88_BLACK_PNG.fw_zpepci.png" 
+              alt="X88"
+              className="w-20 h-12 object-contain mx-auto mb-4 opacity-60"
+            />
+            <h3 className="text-xl font-bold text-black dark:text-white mb-1">
+              Comprovante de transferência
             </h3>
-            <p className="text-sm text-neutral-600 dark:text-neutral-400">
-              {dadosTransferencia.data}
+            <p className="text-xs text-neutral-500 dark:text-neutral-400">
+              {dataHoraFormatada}
             </p>
           </div>
 
           {/* Valor */}
-          <div className="text-center mb-8 pb-6 border-b border-neutral-200 dark:border-neutral-800">
-            <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-2">Valor transferido</p>
-            <p className="text-4xl font-bold text-black dark:text-white">
-              {dadosTransferencia.valor.toLocaleString('pt-PT')} X88
+          <div className="mb-6 pb-6 border-b border-neutral-200 dark:border-neutral-800">
+            <p className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 mb-1">Valor</p>
+            <p className="text-3xl font-bold text-black dark:text-white">
+              {formatCurrency(dadosTransferencia.valor)} <span className="text-xl opacity-60">X88</span>
             </p>
           </div>
 
-          {/* Detalhes */}
-          <div className="space-y-4 mb-6">
-            <div>
-              <p className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 mb-1">De</p>
-              <p className="text-base font-bold text-black dark:text-white">{dadosTransferencia.remetenteNome}</p>
-              <p className="text-sm font-mono text-neutral-600 dark:text-neutral-400">Conta: {dadosTransferencia.remetenteConta}</p>
-            </div>
+          {/* De (Pagador) */}
+          <div className="mb-6 pb-6 border-b border-neutral-200 dark:border-neutral-800">
+            <h4 className="text-sm font-bold text-black dark:text-white mb-3">De</h4>
+            
+            <div className="space-y-3">
+              <div>
+                <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-1">Nome</p>
+                <p className="text-sm text-black dark:text-white font-medium">{dadosTransferencia.remetenteNome}</p>
+              </div>
 
-            <div className="flex items-center justify-center py-2">
-              <svg className="w-6 h-6 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-              </svg>
-            </div>
+              <div>
+                <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-1">Conta</p>
+                <p className="text-sm text-black dark:text-white font-medium">{dadosTransferencia.remetenteConta}</p>
+              </div>
 
-            <div>
-              <p className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 mb-1">Para</p>
-              <p className="text-base font-bold text-black dark:text-white">{dadosTransferencia.destinatarioNome}</p>
-              <p className="text-sm font-mono text-neutral-600 dark:text-neutral-400">Conta: {dadosTransferencia.destinatarioConta}</p>
+              {dadosTransferencia.remetenteEmail && (
+                <div>
+                  <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-1">E-mail</p>
+                  <p className="text-sm text-black dark:text-white font-medium break-all">{dadosTransferencia.remetenteEmail}</p>
+                </div>
+              )}
+
+              {dadosTransferencia.remetenteTelefone && (
+                <div>
+                  <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-1">Telefone</p>
+                  <p className="text-sm text-black dark:text-white font-medium">{dadosTransferencia.remetenteTelefone}</p>
+                </div>
+              )}
             </div>
           </div>
 
-          {/* Logo X88 */}
-          <div className="flex justify-center opacity-50 mb-4">
-            <img 
-              src="https://res.cloudinary.com/dxchbdcai/image/upload/v1759251700/LOGOTIPO_X88_BLACK_PNG.fw_zpepci.png" 
-              alt="X88"
-              className="w-16 h-10 object-contain"
-            />
+          {/* Para (Destinatário) */}
+          <div className="mb-6">
+            <h4 className="text-sm font-bold text-black dark:text-white mb-3">Para</h4>
+            
+            <div className="space-y-3">
+              <div>
+                <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-1">Nome</p>
+                <p className="text-sm text-black dark:text-white font-medium">{dadosTransferencia.destinatarioNome}</p>
+              </div>
+
+              <div>
+                <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-1">Conta</p>
+                <p className="text-sm text-black dark:text-white font-medium">{dadosTransferencia.destinatarioConta}</p>
+              </div>
+
+              {dadosTransferencia.destinatarioEmail && (
+                <div>
+                  <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-1">E-mail</p>
+                  <p className="text-sm text-black dark:text-white font-medium break-all">{dadosTransferencia.destinatarioEmail}</p>
+                </div>
+              )}
+
+              {dadosTransferencia.destinatarioTelefone && (
+                <div>
+                  <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-1">Telefone</p>
+                  <p className="text-sm text-black dark:text-white font-medium">{dadosTransferencia.destinatarioTelefone}</p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 

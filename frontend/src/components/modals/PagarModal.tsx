@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Html5QrcodeScanner } from 'html5-qrcode'
-import { transferirX88 } from '../../services/supabaseService'
+import { transferirX88, buscarDestinatarioPorIdCarteira } from '../../services/supabaseService'
+import { supabase } from '../../lib/supabase'
 import ComprovanteTransferenciaModal from './ComprovanteTransferenciaModal'
 
 interface PagarModalProps {
@@ -11,6 +12,8 @@ interface PagarModalProps {
   userId: string
   remetenteConta: string
   remetenteNome: string
+  remetenteEmail?: string
+  remetenteTelefone?: string
 }
 
 interface DadosPagamento {
@@ -20,7 +23,7 @@ interface DadosPagamento {
   nomeUsuario?: string
 }
 
-const PagarModal: React.FC<PagarModalProps> = ({ isOpen, onClose, userId, remetenteConta, remetenteNome }) => {
+const PagarModal: React.FC<PagarModalProps> = ({ isOpen, onClose, userId, remetenteConta, remetenteNome, remetenteEmail, remetenteTelefone }) => {
   const [escaneando, setEscaneando] = useState(false)
   const [dadosPagamento, setDadosPagamento] = useState<DadosPagamento | null>(null)
   const [confirmando, setConfirmando] = useState(false)
@@ -137,22 +140,38 @@ const PagarModal: React.FC<PagarModalProps> = ({ isOpen, onClose, userId, remete
       )
 
       if (resultado.success) {
-        const agora = new Date()
-        const dataFormatada = agora.toLocaleString('pt-PT', {
-          day: '2-digit',
-          month: '2-digit',
-          year: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit'
-        })
-
+        const infoDestinatario = await buscarDestinatarioPorIdCarteira(dadosPagamento.contaId)
+        
+        let destinatarioEmail = ''
+        let destinatarioTelefone = ''
+        
+        if (infoDestinatario.success && infoDestinatario.destinatario) {
+          const dest = infoDestinatario.destinatario
+          
+          if (dest.tipo === 'cliente' && dest.clienteId) {
+            const { data } = await supabase
+              .from('clientes')
+              .select('email, telefone')
+              .eq('id', dest.clienteId)
+              .single()
+            
+            if (data) {
+              destinatarioEmail = data.email || ''
+              destinatarioTelefone = data.telefone || ''
+            }
+          }
+        }
+        
         setDadosComprovante({
           valor: dadosPagamento.valor,
           destinatarioNome: dadosPagamento.nomeUsuario || 'Destinatário',
           destinatarioConta: dadosPagamento.contaNumero || dadosPagamento.contaId,
-          data: dataFormatada,
+          destinatarioEmail: destinatarioEmail,
+          destinatarioTelefone: destinatarioTelefone,
           remetenteConta: remetenteConta,
-          remetenteNome: remetenteNome
+          remetenteNome: remetenteNome,
+          remetenteEmail: remetenteEmail,
+          remetenteTelefone: remetenteTelefone
         })
         
         setEscaneando(false)
@@ -170,6 +189,7 @@ const PagarModal: React.FC<PagarModalProps> = ({ isOpen, onClose, userId, remete
   if (!isOpen) return null
 
   return (
+    <>
     <div 
       className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
       onClick={handleFechar}
@@ -331,8 +351,10 @@ const PagarModal: React.FC<PagarModalProps> = ({ isOpen, onClose, userId, remete
           </>
         ) : null}
       </div>
+    </div>
 
-      {/* Modal de Comprovante */}
+    {/* Modal de Comprovante - Fora do modal principal */}
+    {comprovanteAberto && (
       <ComprovanteTransferenciaModal
         isOpen={comprovanteAberto}
         onClose={() => {
@@ -341,7 +363,8 @@ const PagarModal: React.FC<PagarModalProps> = ({ isOpen, onClose, userId, remete
         }}
         dadosTransferencia={dadosComprovante}
       />
-    </div>
+    )}
+    </>
   )
 }
 

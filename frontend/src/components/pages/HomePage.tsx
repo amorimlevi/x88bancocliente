@@ -5,6 +5,7 @@ import ReceberModal from '../modals/ReceberModal'
 import PagarModal from '../modals/PagarModal'
 import TransferirModal from '../modals/TransferirModal'
 import { useState, useEffect } from 'react'
+import { useTimezone } from '../../hooks/useTimezone'
 
 interface HomePageProps {
   saldoX88: number
@@ -16,6 +17,8 @@ interface HomePageProps {
   userId?: string
   clienteId?: string
   nomeUsuario?: string
+  emailUsuario?: string
+  telefoneUsuario?: string
   onModalChange?: (isOpen: boolean) => void
   onTransferir?: (destinatarioId: string, valor: number, destinatarioNome?: string, onSuccess?: (dados: any) => void) => void
 }
@@ -30,6 +33,8 @@ const HomePage = ({
   userId = '0001',
   clienteId,
   nomeUsuario = 'Usuário',
+  emailUsuario,
+  telefoneUsuario,
   onModalChange,
   onTransferir
 }: HomePageProps) => {
@@ -37,6 +42,7 @@ const HomePage = ({
   const [modalReceber, setModalReceber] = useState(false)
   const [modalPagar, setModalPagar] = useState(false)
   const [modalTransferir, setModalTransferir] = useState(false)
+  const { formatCurrency } = useTimezone()
 
   // Notificar quando modais abrem/fecham
   useEffect(() => {
@@ -175,7 +181,7 @@ const HomePage = ({
             {/* Valor Principal */}
             <div className="mb-5">
               <p className="text-black text-4xl font-bold leading-none mb-1">
-                {saldoX88.toLocaleString('pt-PT')} 
+                {formatCurrency(saldoX88)} <span className="text-2xl opacity-60">X88</span>
               </p>
               <p className="text-black/80 text-lg font-semibold">
                 {saldoX88.toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €
@@ -226,7 +232,7 @@ const HomePage = ({
             Crédito Disponível
           </p>
         <p className="text-brand-600 dark:text-brand-500 text-3xl font-bold">
-            {creditoDisponivel.toLocaleString('pt-PT')} X88
+            {formatCurrency(creditoDisponivel)} <span className="text-xl opacity-60">X88</span>
             </p>
             </button>
           </div>
@@ -239,6 +245,8 @@ const HomePage = ({
           transacoes={transacoes} 
           userId={userId}
           nomeUsuario={nomeUsuario}
+          userEmail={emailUsuario}
+          userTelefone={telefoneUsuario}
         />
       </div>
 
@@ -264,6 +272,8 @@ const HomePage = ({
         userId={clienteId || userId}
         remetenteConta={userId}
         remetenteNome={nomeUsuario}
+        remetenteEmail={emailUsuario}
+        remetenteTelefone={telefoneUsuario}
       />
 
       <TransferirModal
@@ -276,6 +286,8 @@ const HomePage = ({
         userId={userId}
         remetenteConta={userId}
         remetenteNome={nomeUsuario}
+        remetenteEmail={emailUsuario}
+        remetenteTelefone={telefoneUsuario}
       />
     </div>
   )

@@ -99,11 +99,20 @@ export const useTimezone = () => {
     }
   }
 
+  const formatCurrency = (value: number) => {
+    const locale = timezone === 'America/Sao_Paulo' ? 'pt-BR' : 'pt-PT'
+    return value.toLocaleString(locale, {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    })
+  }
+
   return {
     timezone,
     setTimezone,
     formatDate,
     formatTime,
-    formatDateTime
+    formatDateTime,
+    formatCurrency
   }
 }

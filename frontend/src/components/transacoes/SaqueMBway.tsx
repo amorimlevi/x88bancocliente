@@ -46,7 +46,7 @@ const SaqueMBway = ({ saldoDisponivel, taxaConversao, onClose, onSubmit }: Saque
         <div className="bg-brand-50 dark:bg-brand-950 p-4 rounded-xl mb-6">
           <p className="text-sm text-brand-700 dark:text-brand-400 mb-1">Saldo Disponível</p>
           <p className="text-2xl font-bold text-brand-600 dark:text-brand-500">
-            {saldoDisponivel.toLocaleString('pt-PT')} X88
+            {saldoDisponivel.toLocaleString('pt-PT')} <span className="text-base opacity-60">X88</span>
           </p>
           <p className="text-sm text-brand-600 dark:text-brand-400 mt-1">
             ≈ €{(saldoDisponivel * taxaConversao).toFixed(2).replace('.', ',')}

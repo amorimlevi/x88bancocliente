@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { buscarDestinatarioPorIdCarteira } from '../../services/supabaseService'
+import { supabase } from '../../lib/supabase'
 import ComprovanteTransferenciaModal from './ComprovanteTransferenciaModal'
 
 interface TransferirModalProps {
@@ -10,6 +11,8 @@ interface TransferirModalProps {
   userId?: string
   remetenteConta?: string
   remetenteNome?: string
+  remetenteEmail?: string
+  remetenteTelefone?: string
 }
 
 interface UsuarioDestinatario {
@@ -25,7 +28,9 @@ const TransferirModal: React.FC<TransferirModalProps> = ({
   onSubmit, 
   userId = '0001',
   remetenteConta = '0001',
-  remetenteNome = 'Usuário'
+  remetenteNome = 'Usuário',
+  remetenteEmail,
+  remetenteTelefone
 }) => {
   const [destinatarioId, setDestinatarioId] = useState('')
   const [valorX88, setValorX88] = useState('')
@@ -34,6 +39,17 @@ const TransferirModal: React.FC<TransferirModalProps> = ({
   const [erroUsuario, setErroUsuario] = useState('')
   const [comprovanteAberto, setComprovanteAberto] = useState(false)
   const [dadosComprovante, setDadosComprovante] = useState<any>(null)
+  const [contatosRecentes, setContatosRecentes] = useState<UsuarioDestinatario[]>([])
+  const [mostrarContatos, setMostrarContatos] = useState(true)
+
+  useEffect(() => {
+    if (isOpen) {
+      const contatos = localStorage.getItem(`contatos_recentes_${userId}`)
+      if (contatos) {
+        setContatosRecentes(JSON.parse(contatos))
+      }
+    }
+  }, [isOpen, userId])
 
   useEffect(() => {
     const buscarUsuario = async () => {
@@ -77,28 +93,54 @@ const TransferirModal: React.FC<TransferirModalProps> = ({
         return
       }
       
-      onSubmit(destinatarioId, Number(valorX88), usuarioDestinatario?.nome, () => {
-        const agora = new Date()
-        const dataFormatada = agora.toLocaleString('pt-PT', {
-          day: '2-digit',
-          month: '2-digit',
-          year: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit'
-        })
+      onSubmit(destinatarioId, Number(valorX88), usuarioDestinatario?.nome, async () => {
+        if (usuarioDestinatario) {
+          const contatosAtualizados = [
+            usuarioDestinatario,
+            ...contatosRecentes.filter(c => c.id !== usuarioDestinatario.id)
+          ].slice(0, 5)
+          
+          setContatosRecentes(contatosAtualizados)
+          localStorage.setItem(`contatos_recentes_${userId}`, JSON.stringify(contatosAtualizados))
+        }
 
+        let destinatarioEmail = usuarioDestinatario?.email || ''
+        let destinatarioTelefone = ''
+        
+        const infoDestinatario = await buscarDestinatarioPorIdCarteira(destinatarioId)
+        if (infoDestinatario.success && infoDestinatario.destinatario) {
+          const dest = infoDestinatario.destinatario
+          
+          if (dest.tipo === 'cliente' && dest.clienteId) {
+            const { data } = await supabase
+              .from('clientes')
+              .select('email, telefone')
+              .eq('id', dest.clienteId)
+              .single()
+            
+            if (data) {
+              destinatarioEmail = data.email || destinatarioEmail
+              destinatarioTelefone = data.telefone || ''
+            }
+          }
+        }
+        
         setDadosComprovante({
           valor: Number(valorX88),
           destinatarioNome: usuarioDestinatario?.nome || 'Destinatário',
           destinatarioConta: destinatarioId,
-          data: dataFormatada,
+          destinatarioEmail: destinatarioEmail,
+          destinatarioTelefone: destinatarioTelefone,
           remetenteConta: remetenteConta,
-          remetenteNome: remetenteNome
+          remetenteNome: remetenteNome,
+          remetenteEmail: remetenteEmail,
+          remetenteTelefone: remetenteTelefone
         })
         
         setDestinatarioId('')
         setValorX88('')
         setUsuarioDestinatario(null)
+        setMostrarContatos(true)
         setComprovanteAberto(true)
       })
     }
@@ -109,7 +151,14 @@ const TransferirModal: React.FC<TransferirModalProps> = ({
     setValorX88('')
     setUsuarioDestinatario(null)
     setErroUsuario('')
+    setMostrarContatos(true)
     onClose()
+  }
+
+  const handleSelecionarContato = (contato: UsuarioDestinatario) => {
+    setDestinatarioId(contato.id)
+    setUsuarioDestinatario(contato)
+    setMostrarContatos(false)
   }
 
   const definirValorRapido = (percentual: number) => {
@@ -120,6 +169,7 @@ const TransferirModal: React.FC<TransferirModalProps> = ({
   if (!isOpen) return null
 
   return (
+    <>
     <div 
       className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-0 sm:p-4"
       onClick={handleFechar}
@@ -166,6 +216,48 @@ const TransferirModal: React.FC<TransferirModalProps> = ({
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Contatos Recentes */}
+            {mostrarContatos && contatosRecentes.length > 0 && (
+              <div>
+                <label className="block text-sm font-semibold text-black dark:text-white mb-3">
+                  Contatos Recentes
+                </label>
+                <div className="space-y-2 mb-4">
+                  {contatosRecentes.map((contato) => (
+                    <button
+                      key={contato.id}
+                      type="button"
+                      onClick={() => handleSelecionarContato(contato)}
+                      className="w-full p-3 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded-xl flex items-center gap-3 transition-colors text-left"
+                    >
+                      <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
+                        <span className="text-white font-bold text-sm">
+                          {contato.nome.charAt(0).toUpperCase()}
+                        </span>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-bold text-black dark:text-white truncate">{contato.nome}</p>
+                        <p className="text-xs font-mono text-neutral-600 dark:text-neutral-400 truncate">
+                          Conta: {contato.id}
+                        </p>
+                      </div>
+                      <svg className="w-5 h-5 text-neutral-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </button>
+                  ))}
+                </div>
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-neutral-200 dark:border-neutral-700"></div>
+                  </div>
+                  <div className="relative flex justify-center text-xs">
+                    <span className="px-2 bg-white dark:bg-neutral-900 text-neutral-500 dark:text-neutral-400">ou digite a conta</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* ID do Destinatário */}
             <div>
               <label className="block text-sm font-semibold text-black dark:text-white mb-2">
@@ -177,7 +269,9 @@ const TransferirModal: React.FC<TransferirModalProps> = ({
                 onChange={(e) => {
                   const valor = e.target.value.replace(/\D/g, '').slice(0, 6)
                   setDestinatarioId(valor)
+                  setMostrarContatos(false)
                 }}
+                onFocus={() => setMostrarContatos(false)}
                 className="w-full px-4 py-3 bg-neutral-100 dark:bg-neutral-800 rounded-xl text-lg font-mono font-bold text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="000000"
                 maxLength={6}
@@ -301,8 +395,10 @@ const TransferirModal: React.FC<TransferirModalProps> = ({
           </form>
         </div>
       </div>
+    </div>
 
-      {/* Modal de Comprovante */}
+    {/* Modal de Comprovante - Fora do modal principal */}
+    {comprovanteAberto && (
       <ComprovanteTransferenciaModal
         isOpen={comprovanteAberto}
         onClose={() => {
@@ -311,7 +407,8 @@ const TransferirModal: React.FC<TransferirModalProps> = ({
         }}
         dadosTransferencia={dadosComprovante}
       />
-    </div>
+    )}
+    </>
   )
 }
 

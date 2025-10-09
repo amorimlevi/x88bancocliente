@@ -30,10 +30,12 @@ interface MinhasTransacoesProps {
   semLimite?: boolean
   userId?: string
   nomeUsuario?: string
+  userEmail?: string
+  userTelefone?: string
 }
 
-const MinhasTransacoes = ({ transacoes, semLimite = false, userId = '0001', nomeUsuario = 'Usuário' }: MinhasTransacoesProps) => {
-  const { formatDate, formatTime } = useTimezone()
+const MinhasTransacoes = ({ transacoes, semLimite = false, userId = '0001', nomeUsuario = 'Usuário', userEmail, userTelefone }: MinhasTransacoesProps) => {
+  const { formatDate, formatTime, formatCurrency } = useTimezone()
   const [transacaoSelecionada, setTransacaoSelecionada] = useState<Transacao | null>(null)
   
   const getStatusIcon = (status: string) => {
@@ -172,7 +174,7 @@ const MinhasTransacoes = ({ transacoes, semLimite = false, userId = '0001', nome
                          ? 'text-red-600 dark:text-red-500' 
                          : 'text-brand-600 dark:text-brand-500'
                   }`}>
-                    {(transacao.tipo === 'debito' || transacao.tipo === 'transferencia' || (transacao.tipo === 'saque' && (transacao.telefone?.includes('Transferência X88') || transacao.telefone?.startsWith('ID:')))) ? '-' : (transacao.tipo === 'recebido' || transacao.tipo === 'credito') ? '+' : ''}{transacao.valor.toLocaleString('pt-PT')} X88
+                    {(transacao.tipo === 'debito' || transacao.tipo === 'transferencia' || (transacao.tipo === 'saque' && (transacao.telefone?.includes('Transferência X88') || transacao.telefone?.startsWith('ID:')))) ? '-' : (transacao.tipo === 'recebido' || transacao.tipo === 'credito') ? '+' : ''}{formatCurrency(transacao.valor)} <span className="text-sm opacity-60">X88</span>
                   </p>
                   
                   {transacao.valorEuro && (
@@ -219,6 +221,8 @@ const MinhasTransacoes = ({ transacoes, semLimite = false, userId = '0001', nome
           onClose={() => setTransacaoSelecionada(null)}
           userId={userId}
           nomeUsuario={nomeUsuario}
+          userEmail={userEmail}
+          userTelefone={userTelefone}
         />
       )}
     </div>

@@ -194,6 +194,8 @@ const Dashboard = ({ onLogout, dadosUsuario, userId = '0001' }: DashboardProps) 
             userId={carteiraId}
             clienteId={userId}
             nomeUsuario={cliente?.nome_completo || cliente?.nome || dadosUsuario?.nome || 'Usuário'}
+            emailUsuario={cliente?.email || dadosUsuario?.email}
+            telefoneUsuario={cliente?.telefone || dadosUsuario?.telefone}
             onModalChange={setModalAberto}
             onTransferir={handleTransferenciaX88}
           />
@@ -232,7 +234,13 @@ const Dashboard = ({ onLogout, dadosUsuario, userId = '0001' }: DashboardProps) 
         setPaginaAtual('inicio')
         return null
       case 'historico':
-        return <HistoricoPage transacoes={transacoes} />
+        return <HistoricoPage 
+          transacoes={transacoes} 
+          userId={carteiraId}
+          nomeUsuario={cliente?.nome || dadosUsuario?.nome || 'Usuário'}
+          emailUsuario={cliente?.email || dadosUsuario?.email}
+          telefoneUsuario={cliente?.telefone || dadosUsuario?.telefone}
+        />
       case 'perfil':
         return <PerfilPage 
           onLogout={onLogout} 

@@ -77,7 +77,7 @@ const SolicitarCredito = ({ creditoDisponivel, onClose, onSubmit }: SolicitarCre
         <div className="bg-brand-50 dark:bg-brand-950 p-4 rounded-xl mb-6 border border-brand-200 dark:border-brand-800">
           <p className="text-sm text-brand-700 dark:text-brand-400 mb-1">Crédito Disponível para Empréstimo</p>
           <p className="text-3xl font-bold text-brand-600 dark:text-brand-500">
-            {creditoDisponivel.toLocaleString('pt-PT')} X88
+            {creditoDisponivel.toLocaleString('pt-PT')} <span className="text-xl opacity-60">X88</span>
           </p>
         </div>
 
@@ -173,14 +173,14 @@ const SolicitarCredito = ({ creditoDisponivel, onClose, onSubmit }: SolicitarCre
                 <div className="flex justify-between items-center">
                   <span className="text-neutral-700 dark:text-neutral-300">Valor solicitado:</span>
                   <span className="font-bold text-black dark:text-white text-lg">
-                    {valorNumerico.toLocaleString('pt-PT')} X88
+                    {valorNumerico.toLocaleString('pt-PT')} <span className="text-sm opacity-60">X88</span>
                   </span>
                 </div>
 
                 <div className="flex justify-between items-center">
                   <span className="text-neutral-700 dark:text-neutral-300">Juros ({jurosPercentual}%):</span>
                   <span className="font-bold text-orange-600 dark:text-orange-400 text-lg">
-                    +{valorJuros.toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} X88
+                    +{valorJuros.toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} <span className="text-sm opacity-60">X88</span>
                   </span>
                 </div>
 
@@ -188,7 +188,7 @@ const SolicitarCredito = ({ creditoDisponivel, onClose, onSubmit }: SolicitarCre
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-neutral-700 dark:text-neutral-300 font-semibold">Total a pagar:</span>
                     <span className="font-bold text-red-600 dark:text-red-400 text-2xl">
-                      {valorTotal.toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} X88
+                      {valorTotal.toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} <span className="text-lg opacity-60">X88</span>
                     </span>
                   </div>
                 </div>
@@ -198,7 +198,7 @@ const SolicitarCredito = ({ creditoDisponivel, onClose, onSubmit }: SolicitarCre
                     <div>
                       <p className="text-sm text-neutral-500 dark:text-neutral-400">Você pagará:</p>
                       <p className="font-bold text-brand-600 dark:text-brand-500 text-xl">
-                        {parcelas}x de {valorParcela.toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} X88
+                        {parcelas}x de {valorParcela.toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} <span className="text-sm opacity-60">X88</span>
                       </p>
                     </div>
                     <div className="text-right">
@@ -228,7 +228,7 @@ const SolicitarCredito = ({ creditoDisponivel, onClose, onSubmit }: SolicitarCre
                             {index + 1}ª parcela:
                           </span>
                           <span className="font-semibold text-black dark:text-white">
-                            {dataPagamento.toLocaleDateString('pt-PT')} - {valorParcela.toFixed(2)} X88
+                            {dataPagamento.toLocaleDateString('pt-PT')} - {valorParcela.toFixed(2)} <span className="text-xs opacity-60">X88</span>
                           </span>
                         </div>
                       )

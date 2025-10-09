@@ -4,9 +4,13 @@ import { HistoryIcon } from '../ui/Icons'
 
 interface HistoricoPageProps {
   transacoes: any[]
+  userId?: string
+  nomeUsuario?: string
+  emailUsuario?: string
+  telefoneUsuario?: string
 }
 
-const HistoricoPage = ({ transacoes }: HistoricoPageProps) => {
+const HistoricoPage = ({ transacoes, userId, nomeUsuario, emailUsuario, telefoneUsuario }: HistoricoPageProps) => {
   const [dataInicio, setDataInicio] = useState('')
   const [dataFim, setDataFim] = useState('')
 
@@ -84,7 +88,14 @@ const HistoricoPage = ({ transacoes }: HistoricoPageProps) => {
         </div>
 
         {/* Lista de Transações */}
-        <MinhasTransacoes transacoes={transacoesFiltradas} semLimite />
+        <MinhasTransacoes 
+          transacoes={transacoesFiltradas} 
+          semLimite 
+          userId={userId}
+          nomeUsuario={nomeUsuario}
+          userEmail={emailUsuario}
+          userTelefone={telefoneUsuario}
+        />
       </div>
     </div>
   )
