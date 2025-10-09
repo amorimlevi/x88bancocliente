@@ -61,7 +61,13 @@ const PagarModal: React.FC<PagarModalProps> = ({ isOpen, onClose }) => {
       setScanner(html5QrcodeScanner)
 
       return () => {
-        html5QrcodeScanner.clear().catch(console.error)
+        html5QrcodeScanner.clear().catch(console.error).finally(() => {
+          // Limpar completamente o elemento do DOM
+          const qrReaderElement = document.getElementById('qr-reader')
+          if (qrReaderElement) {
+            qrReaderElement.innerHTML = ''
+          }
+        })
       }
     }
   }, [isOpen, escaneando])
@@ -70,22 +76,46 @@ const PagarModal: React.FC<PagarModalProps> = ({ isOpen, onClose }) => {
     setEscaneando(true)
   }
 
-  const handleVoltar = () => {
+  const handleVoltar = async () => {
+    if (scanner) {
+      try {
+        await scanner.clear()
+        setScanner(null)
+      } catch (err) {
+        console.error('Erro ao limpar scanner:', err)
+      }
+    }
+    
+    // Limpar completamente o elemento do DOM
+    const qrReaderElement = document.getElementById('qr-reader')
+    if (qrReaderElement) {
+      qrReaderElement.innerHTML = ''
+    }
+    
     setEscaneando(false)
     setConfirmando(false)
     setDadosPagamento(null)
-    if (scanner) {
-      scanner.clear().catch(console.error)
-    }
   }
 
-  const handleFechar = () => {
+  const handleFechar = async () => {
+    if (scanner) {
+      try {
+        await scanner.clear()
+        setScanner(null)
+      } catch (err) {
+        console.error('Erro ao limpar scanner:', err)
+      }
+    }
+    
+    // Limpar completamente o elemento do DOM
+    const qrReaderElement = document.getElementById('qr-reader')
+    if (qrReaderElement) {
+      qrReaderElement.innerHTML = ''
+    }
+    
     setEscaneando(false)
     setConfirmando(false)
     setDadosPagamento(null)
-    if (scanner) {
-      scanner.clear().catch(console.error)
-    }
     onClose()
   }
 
@@ -182,6 +212,14 @@ const PagarModal: React.FC<PagarModalProps> = ({ isOpen, onClose }) => {
               }
 
               #qr-reader__dashboard_section_swaplink {
+                display: none !important;
+              }
+
+              #qr-reader__dashboard_section_fsr {
+                display: none !important;
+              }
+
+              #qr-reader__filescan_input {
                 display: none !important;
               }
 
