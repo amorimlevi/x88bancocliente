@@ -14,6 +14,7 @@ interface HomePageProps {
   transacoes: any[]
   onNavigate: (pagina: string) => void
   userId?: string
+  clienteId?: string
   nomeUsuario?: string
   onModalChange?: (isOpen: boolean) => void
   onTransferir?: (destinatarioId: string, valor: number, destinatarioNome?: string) => void
@@ -27,6 +28,7 @@ const HomePage = ({
   transacoes,
   onNavigate,
   userId = '0001',
+  clienteId,
   nomeUsuario = 'Usuário',
   onModalChange,
   onTransferir
@@ -259,7 +261,7 @@ const HomePage = ({
         onDigitarId={() => {
           onNavigate('transferir-x88')
         }}
-        userId={userId}
+        userId={clienteId || userId}
       />
 
       <TransferirModal

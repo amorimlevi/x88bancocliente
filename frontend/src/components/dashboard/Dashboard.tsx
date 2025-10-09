@@ -189,6 +189,7 @@ const Dashboard = ({ onLogout, dadosUsuario, userId = '0001' }: DashboardProps) 
             transacoes={transacoes}
             onNavigate={setPaginaAtual}
             userId={carteiraId}
+            clienteId={userId}
             nomeUsuario={cliente?.nome_completo || cliente?.nome || dadosUsuario?.nome || 'Usuário'}
             onModalChange={setModalAberto}
             onTransferir={handleTransferenciaX88}
