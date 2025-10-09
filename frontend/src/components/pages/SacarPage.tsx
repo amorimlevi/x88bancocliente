@@ -88,26 +88,10 @@ const SacarPage = ({ saldoDisponivel, creditoDisponivel, taxaConversao, onSubmit
             />
           </div>
 
-          {!dadosBancariosCompletos && (
-            <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 p-4 rounded-xl">
-              <p className="text-sm text-yellow-800 dark:text-yellow-200 mb-2">
-                ⚠️ Cadastre seus dados bancários para solicitar saques
-              </p>
-              {onNavigate && (
-                <button
-                  onClick={() => onNavigate('perfil')}
-                  className="text-sm font-semibold text-yellow-900 dark:text-yellow-100 underline hover:no-underline"
-                >
-                  Ir para Perfil →
-                </button>
-              )}
-            </div>
-          )}
-
           {/* Botão */}
           <button
             type="submit"
-            disabled={!valorX88 || !dadosBancariosCompletos}
+            disabled={!valorX88}
             className="w-full btn-primary flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <ArrowDownIcon size="md" />

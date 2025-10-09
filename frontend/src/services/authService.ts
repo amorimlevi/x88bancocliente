@@ -12,6 +12,7 @@ export interface Cliente {
   ativo: boolean
   status: string
   origem: string
+  credito_disponivel_x88?: number
   criado_em: string
   atualizado_em: string
 }

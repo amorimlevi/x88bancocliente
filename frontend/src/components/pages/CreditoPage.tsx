@@ -22,9 +22,11 @@ interface CreditoPageProps {
   onSubmit: (valor: number, motivo: string, parcelas: number, periodo: number, valorTotal: number, valorParcela: number) => void
   transacoes?: Transacao[]
   onPagarParcela?: (emprestimoId: string) => void
+  dadosBancariosCompletos?: boolean
+  onNavigate?: (pagina: string) => void
 }
 
-const CreditoPage = ({ creditoDisponivel, saldoX88, onSubmit, transacoes = [], onPagarParcela }: CreditoPageProps) => {
+const CreditoPage = ({ creditoDisponivel, saldoX88, onSubmit, transacoes = [], onPagarParcela, dadosBancariosCompletos = false, onNavigate }: CreditoPageProps) => {
   const [abaAtiva, setAbaAtiva] = useState<'solicitar' | 'meus'>('solicitar')
   const [valor, setValor] = useState('')
   const [motivo, setMotivo] = useState('')
@@ -299,10 +301,27 @@ const CreditoPage = ({ creditoDisponivel, saldoX88, onSubmit, transacoes = [], o
             </button>
           </div>
 
+          {!dadosBancariosCompletos && (
+            <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 p-4 rounded-xl">
+              <p className="text-sm text-yellow-800 dark:text-yellow-200 mb-2">
+                ⚠️ Cadastre seus dados bancários para solicitar empréstimos
+              </p>
+              {onNavigate && (
+                <button
+                  type="button"
+                  onClick={() => onNavigate('perfil')}
+                  className="text-sm font-semibold text-yellow-900 dark:text-yellow-100 underline hover:no-underline"
+                >
+                  Ir para Perfil →
+                </button>
+              )}
+            </div>
+          )}
+
           {/* Botão */}
           <button
             type="submit"
-            disabled={!dentroDoLimite || !valor || !motivo}
+            disabled={!dentroDoLimite || !valor || !motivo || !dadosBancariosCompletos}
             className="w-full btn-primary flex items-center justify-center gap-2 disabled:opacity-50"
           >
             <CreditCardIcon size="md" />

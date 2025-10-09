@@ -57,7 +57,7 @@ const Dashboard = ({ onLogout, dadosUsuario, userId = '0001' }: DashboardProps) 
   }, [paginaAtual])
 
   const saldoX88 = carteira ? parseFloat(carteira.saldo) : 0
-  const creditoDisponivel = 5000
+  const creditoDisponivel = cliente?.credito_disponivel_x88 || 0
   const taxaConversao = 1.0
   
   const [dadosBancarios, setDadosBancarios] = useState({
@@ -175,6 +175,7 @@ const Dashboard = ({ onLogout, dadosUsuario, userId = '0001' }: DashboardProps) 
 
   const transacoesPendentes = solicitacoesPendentes.length
   const saldoEmEuros = saldoX88 * taxaConversao
+  const dadosBancariosCompletos = !!(dadosBancarios.iban && dadosBancarios.titular && dadosBancarios.banco)
 
   const renderPagina = () => {
     switch (paginaAtual) {
@@ -187,10 +188,11 @@ const Dashboard = ({ onLogout, dadosUsuario, userId = '0001' }: DashboardProps) 
             transacoesPendentes={transacoesPendentes}
             transacoes={transacoes}
             onNavigate={setPaginaAtual}
+            userId={carteiraId}
+            nomeUsuario={cliente?.nome_completo || cliente?.nome || dadosUsuario?.nome || 'Usuário'}
           />
         )
       case 'sacar':
-        const dadosBancariosCompletos = !!(dadosBancarios.iban && dadosBancarios.titular && dadosBancarios.banco)
         return (
           <SacarPage
             saldoDisponivel={saldoX88}
@@ -213,6 +215,11 @@ const Dashboard = ({ onLogout, dadosUsuario, userId = '0001' }: DashboardProps) 
             onSubmit={handleSolicitarCredito}
             transacoes={transacoes}
             onPagarParcela={handlePagarParcela}
+            dadosBancariosCompletos={dadosBancariosCompletos}
+            onNavigate={(pagina) => {
+              setPaginaAnterior('credito')
+              setPaginaAtual(pagina)
+            }}
           />
         )
       case 'depositar':

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, RefObject } from 'react'
-import { HomeIcon, HistoryIcon, UserIcon } from '../ui/Icons'
+import { HomeIcon, HistoryIcon, MenuIcon } from '../ui/Icons'
 
 interface BottomNavProps {
   paginaAtual: string
@@ -67,7 +67,7 @@ const BottomNav = ({ paginaAtual, onNavigate, scrollContainerRef }: BottomNavPro
     { id: 'sacar', icon: X88Icon, label: 'X88' },
     { id: 'credito', icon: EuroIcon, label: 'Empréstimo' },
     { id: 'historico', icon: HistoryIcon, label: 'Histórico' },
-    { id: 'perfil', icon: UserIcon, label: 'Perfil' },
+    { id: 'perfil', icon: MenuIcon, label: 'Menu' },
   ]
 
   return (

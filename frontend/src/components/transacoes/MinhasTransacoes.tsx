@@ -1,5 +1,7 @@
+import { useState } from 'react'
 import { CheckIcon, XIcon, ClockIcon, ArrowDownIcon, CreditCardIcon, ArrowUpIcon } from '../ui/Icons'
 import { useTimezone } from '../../hooks/useTimezone'
+import ComprovanteModal from './ComprovanteModal'
 
 interface Transacao {
   id: string
@@ -26,10 +28,13 @@ interface Transacao {
 interface MinhasTransacoesProps {
   transacoes: Transacao[]
   semLimite?: boolean
+  userId?: string
+  nomeUsuario?: string
 }
 
-const MinhasTransacoes = ({ transacoes, semLimite = false }: MinhasTransacoesProps) => {
+const MinhasTransacoes = ({ transacoes, semLimite = false, userId = '0001', nomeUsuario = 'Usuário' }: MinhasTransacoesProps) => {
   const { formatDate, formatTime } = useTimezone()
+  const [transacaoSelecionada, setTransacaoSelecionada] = useState<Transacao | null>(null)
   
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -122,7 +127,11 @@ const MinhasTransacoes = ({ transacoes, semLimite = false }: MinhasTransacoesPro
       ) : (
         <div className="space-y-3">
           {transacoesExibidas.map((transacao) => (
-            <div key={transacao.id} className="bg-white dark:bg-neutral-900 rounded-2xl p-4 border border-neutral-100 dark:border-neutral-800">
+            <div 
+              key={transacao.id} 
+              onClick={() => setTransacaoSelecionada(transacao)}
+              className="bg-white dark:bg-neutral-900 rounded-2xl p-4 border border-neutral-100 dark:border-neutral-800 cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors active:scale-[0.98]"
+            >
               <div className="flex items-start gap-3">
                 {/* Ícone do Tipo */}
                 <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
@@ -199,6 +208,16 @@ const MinhasTransacoes = ({ transacoes, semLimite = false }: MinhasTransacoesPro
             </div>
           ))}
         </div>
+      )}
+
+      {/* Modal de Comprovante */}
+      {transacaoSelecionada && (
+        <ComprovanteModal
+          transacao={transacaoSelecionada}
+          onClose={() => setTransacaoSelecionada(null)}
+          userId={userId}
+          nomeUsuario={nomeUsuario}
+        />
       )}
     </div>
   )

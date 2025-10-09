@@ -1,5 +1,6 @@
-import { WalletIcon } from '../ui/Icons'
+import { WalletIcon, CopyIcon } from '../ui/Icons'
 import MinhasTransacoes from '../transacoes/MinhasTransacoes'
+import { useState } from 'react'
 
 interface HomePageProps {
   saldoX88: number
@@ -8,6 +9,8 @@ interface HomePageProps {
   transacoesPendentes: number
   transacoes: any[]
   onNavigate: (pagina: string) => void
+  userId?: string
+  nomeUsuario?: string
 }
 
 const HomePage = ({
@@ -16,8 +19,22 @@ const HomePage = ({
   creditoDisponivel,
   transacoesPendentes,
   transacoes,
-  onNavigate
+  onNavigate,
+  userId = '0001',
+  nomeUsuario = 'Usuário'
 }: HomePageProps) => {
+  const [copiado, setCopiado] = useState(false)
+
+  const copiarNumeroConta = async () => {
+    try {
+      await navigator.clipboard.writeText(userId)
+      setCopiado(true)
+      setTimeout(() => setCopiado(false), 2000)
+    } catch (err) {
+      console.error('Erro ao copiar:', err)
+    }
+  }
+
   return (
     <div className="p-4 bg-white dark:bg-black min-h-full">
       <div className="max-w-md mx-auto">
@@ -35,26 +52,55 @@ const HomePage = ({
 
         {/* Card Verde - Saldo Disponível */}
         <div className="mb-3">
-          <div className="rounded-2xl p-6 shadow-md relative" style={{ backgroundColor: '#15FF5D', borderColor: '#15FF5D' }}>
+          <div className="rounded-3xl p-5 shadow-lg relative overflow-hidden" style={{ 
+            backgroundColor: '#15FF5D', 
+            borderColor: '#15FF5D',
+            minHeight: '180px'
+          }}>
+            {/* Header do Cartão */}
             <div className="flex items-center justify-between mb-4">
-              <p className="text-dark black text-4x1 font-medium">Saldo Disponível</p>
-              <WalletIcon size="sm" className="text-dark black" />
+              <div>
+                <p className="text-black/70 text-sm font-semibold uppercase tracking-wider mb-1">X88 Bank</p>
+                <p className="text-black text-base font-bold">Saldo Disponível</p>
+              </div>
+              <WalletIcon size="md" className="text-black" />
             </div>
             
-            <div className="mb-3">
-              <p className="text-dark black text-5xl font-bold leading-none mb-2">
+            {/* Valor Principal */}
+            <div className="mb-5">
+              <p className="text-black text-4xl font-bold leading-none mb-1">
                 {saldoX88.toLocaleString('pt-PT')} 
               </p>
-              <p className="text-dark black/90 text-lg">
+              <p className="text-black/80 text-lg font-semibold">
                 {saldoX88.toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €
               </p>
             </div>
 
-            <div className="absolute bottom-4 right-4">
+            {/* Número da Conta */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div>
+                  <p className="text-black/70 text-sm font-semibold mb-0.5">Conta</p>
+                  <p className="text-black text-base font-mono font-bold tracking-wider">{userId}</p>
+                </div>
+                <button
+                  onClick={copiarNumeroConta}
+                  className="p-2 rounded-lg hover:bg-black/10 transition-colors active:scale-95"
+                  title="Copiar número da conta"
+                >
+                  {copiado ? (
+                    <span className="text-black text-sm font-bold">✓</span>
+                  ) : (
+                    <CopyIcon size="md" className="text-black" />
+                  )}
+                </button>
+              </div>
+
+              {/* Logo X88 */}
               <img 
                 src="https://res.cloudinary.com/dxchbdcai/image/upload/v1759251700/LOGOTIPO_X88_BLACK_PNG.fw_zpepci.png" 
                 alt="X88"
-                className="w-14 h-9 object-contain"
+                className="w-14 h-9 object-contain opacity-90"
               />
             </div>
           </div>
@@ -82,25 +128,31 @@ const HomePage = ({
           </button>
         </div>
 
-        {/* Card Branco - Crédito Disponível */}
+        {/* Card Branco - Crédito Disponível (só aparece se creditoDisponivel > 0) */}
+        {creditoDisponivel > 0 && (
         <div className="mb-3">
-          <button
-            onClick={() => onNavigate('sacar')}
+        <button
+          onClick={() => onNavigate('sacar')}
             className="w-full bg-white dark:bg-neutral-900 rounded-2xl p-5 shadow-sm text-center hover:shadow-md transition-shadow border border-neutral-100 dark:border-neutral-800"
-          >
-            <p className="text-dark black-500 dark :text-neutral-400 text-sm mb-2">
-              Crédito Disponível
+        >
+        <p className="text-dark black-500 dark :text-neutral-400 text-sm mb-2">
+            Crédito Disponível
+          </p>
+        <p className="text-brand-600 dark:text-brand-500 text-3xl font-bold">
+            {creditoDisponivel.toLocaleString('pt-PT')} X88
             </p>
-            <p className="text-brand-600 dark:text-brand-500 text-3xl font-bold">
-              {creditoDisponivel.toLocaleString('pt-PT')} X88
-            </p>
-          </button>
-        </div>
+            </button>
+          </div>
+        )}
 
        
 
         {/* Minhas Transações */}
-        <MinhasTransacoes transacoes={transacoes} />
+        <MinhasTransacoes 
+          transacoes={transacoes} 
+          userId={userId}
+          nomeUsuario={nomeUsuario}
+        />
       </div>
     </div>
   )
