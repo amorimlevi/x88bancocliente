@@ -1,6 +1,9 @@
 import { WalletIcon, CopyIcon } from '../ui/Icons'
 import MinhasTransacoes from '../transacoes/MinhasTransacoes'
-import { useState } from 'react'
+import AcoesRapidas from '../ui/AcoesRapidas'
+import ReceberModal from '../modals/ReceberModal'
+import PagarModal from '../modals/PagarModal'
+import { useState, useEffect } from 'react'
 
 interface HomePageProps {
   saldoX88: number
@@ -11,6 +14,7 @@ interface HomePageProps {
   onNavigate: (pagina: string) => void
   userId?: string
   nomeUsuario?: string
+  onModalChange?: (isOpen: boolean) => void
 }
 
 const HomePage = ({
@@ -21,9 +25,18 @@ const HomePage = ({
   transacoes,
   onNavigate,
   userId = '0001',
-  nomeUsuario = 'Usuário'
+  nomeUsuario = 'Usuário',
+  onModalChange
 }: HomePageProps) => {
   const [copiado, setCopiado] = useState(false)
+  const [modalReceber, setModalReceber] = useState(false)
+  const [modalPagar, setModalPagar] = useState(false)
+
+  // Notificar quando modais abrem/fecham
+  useEffect(() => {
+    const modalAberto = modalReceber || modalPagar
+    onModalChange?.(modalAberto)
+  }, [modalReceber, modalPagar, onModalChange])
 
   const copiarNumeroConta = async () => {
     try {
@@ -34,6 +47,93 @@ const HomePage = ({
       console.error('Erro ao copiar:', err)
     }
   }
+
+  const acoes = [
+    {
+      id: 'receber',
+      icone: (
+        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
+        </svg>
+      ),
+      titulo: 'Receber',
+      cor: '#15FF5D',
+      corIcone: '#000000',
+      onClick: () => setModalReceber(true)
+    },
+    {
+      id: 'pagar',
+      icone: (
+        <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M3 3h8v8H3V3zm2 2v4h4V5H5zM3 13h8v8H3v-8zm2 2v4h4v-4H5zm8-12h8v8h-8V3zm2 2v4h4V5h-4zM13 13h2v2h-2v-2zm4 0h2v2h-2v-2zm-4 4h2v2h-2v-2zm4 0h2v2h-2v-2zm-2-2h2v2h-2v-2zm2 4h2v2h-2v-2z"/>
+        </svg>
+      ),
+      titulo: 'Pagar QR Code',
+      cor: '#FFF700',
+      corIcone: '#000000',
+      onClick: () => setModalPagar(true)
+    },
+    {
+      id: 'transferir',
+      icone: (
+        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+        </svg>
+      ),
+      titulo: 'Transferir',
+      cor: '#E8E8E8',
+      corIcone: '#1F2937',
+      onClick: () => onNavigate('transferir-x88')
+    },
+    {
+      id: 'extrato',
+      icone: (
+        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+      ),
+      titulo: 'Extrato',
+      cor: '#E8E8E8',
+      corIcone: '#1F2937',
+      onClick: () => onNavigate('historico')
+    },
+    {
+      id: 'historico',
+      icone: (
+        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      ),
+      titulo: 'Histórico',
+      cor: '#E8E8E8',
+      corIcone: '#1F2937',
+      onClick: () => onNavigate('historico')
+    },
+    {
+      id: 'solicitar',
+      icone: (
+        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+        </svg>
+      ),
+      titulo: 'Solicitar X88',
+      cor: '#E8E8E8',
+      corIcone: '#1F2937',
+      onClick: () => onNavigate('sacar')
+    },
+    {
+      id: 'emprestimo',
+      icone: (
+        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+        </svg>
+      ),
+      titulo: 'Empréstimo',
+      cor: '#E8E8E8',
+      corIcone: '#1F2937',
+      onClick: () => onNavigate('credito')
+    }
+  ]
 
   return (
     <div className="p-4 bg-white dark:bg-black min-h-full">
@@ -105,28 +205,9 @@ const HomePage = ({
             </div>
           </div>
         </div>
-         {/* Botão Transferir X88 */}
-        <div className="mb-6">
-          <button
-            onClick={() => onNavigate('transferir-x88')}
-            className="w-full rounded-2xl p-5 shadow-md text-center hover:shadow-lg transition-shadow relative"
-            style={{ backgroundColor: '#FFF700', borderColor: '#FFF700' }}
-          >
-            <p className="text-black text-2xl mb-1 font-bold">
-              Pagar
-            </p>
-            <p className="text-black text-sm font-medium">
-             
-            </p>
-            <div className="absolute bottom-4 right-4">
-              <img 
-                src="https://res.cloudinary.com/dxchbdcai/image/upload/v1759251700/LOGOTIPO_X88_BLACK_PNG.fw_zpepci.png" 
-                alt="X88"
-                className="w-12 h-4 object-contain"
-              />
-            </div>
-          </button>
-        </div>
+
+        {/* Ações Rápidas - Scroll Horizontal */}
+        <AcoesRapidas acoes={acoes} />
 
         {/* Card Branco - Crédito Disponível (só aparece se creditoDisponivel > 0) */}
         {creditoDisponivel > 0 && (
@@ -154,6 +235,26 @@ const HomePage = ({
           nomeUsuario={nomeUsuario}
         />
       </div>
+
+      {/* Modals */}
+      <ReceberModal 
+        isOpen={modalReceber}
+        onClose={() => setModalReceber(false)}
+        contaId={userId}
+        nomeUsuario={nomeUsuario}
+      />
+
+      <PagarModal
+        isOpen={modalPagar}
+        onClose={() => setModalPagar(false)}
+        onScanQR={() => {
+          // TODO: Implementar scanner QR Code
+          console.log('Abrir scanner QR')
+        }}
+        onDigitarId={() => {
+          onNavigate('transferir-x88')
+        }}
+      />
     </div>
   )
 }

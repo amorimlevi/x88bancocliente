@@ -126,7 +126,10 @@ const SolicitarCredito = ({ creditoDisponivel, onClose, onSubmit }: SolicitarCre
               ))}
             </div>
             <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-2">
-              💡 Quanto mais parcelas, maior o juros
+              <svg className="w-3 h-3 inline mr-1" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+              </svg>
+              Quanto mais parcelas, maior o juros
             </p>
           </div>
 
@@ -160,7 +163,10 @@ const SolicitarCredito = ({ creditoDisponivel, onClose, onSubmit }: SolicitarCre
           {valorNumerico > 0 && (
             <div className="bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-yellow-950 dark:to-orange-950 border-2 border-yellow-300 dark:border-yellow-700 p-5 rounded-2xl">
               <h4 className="font-bold text-lg text-black dark:text-white mb-4 flex items-center gap-2">
-                💰 Resumo do Empréstimo
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                </svg>
+                Resumo do Empréstimo
               </h4>
               
               <div className="space-y-3">
@@ -204,7 +210,12 @@ const SolicitarCredito = ({ creditoDisponivel, onClose, onSubmit }: SolicitarCre
 
                 {/* Calendário de Parcelas */}
                 <div className="bg-white dark:bg-neutral-900 p-4 rounded-xl">
-                  <p className="font-semibold text-black dark:text-white mb-3">📅 Datas de Pagamento:</p>
+                  <p className="font-semibold text-black dark:text-white mb-3 flex items-center gap-2">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    Datas de Pagamento:
+                  </p>
                   <div className="max-h-40 overflow-y-auto space-y-2">
                     {Array.from({ length: parcelas }).map((_, index) => {
                       const diasTotal = periodo * (index + 1)

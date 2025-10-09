@@ -173,7 +173,12 @@ const EnderecoPage = ({ onVoltar, dadosUsuario }: EnderecoPageProps) => {
 
           {/* Informação */}
           <div className="mt-6 bg-blue-50 dark:bg-blue-900/20 rounded-2xl p-4 border border-blue-200 dark:border-blue-800">
-            <p className="text-blue-900 dark:text-blue-300 text-sm font-medium mb-2">📍 Endereço de correspondência</p>
+            <p className="text-blue-900 dark:text-blue-300 text-sm font-medium mb-2 flex items-center gap-1">
+                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                </svg>
+                Endereço de correspondência
+              </p>
             <p className="text-blue-800 dark:text-blue-400 text-xs">
               Este endereço será usado para correspondências oficiais e verificação de identidade.
             </p>

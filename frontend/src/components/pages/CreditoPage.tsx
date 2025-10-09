@@ -249,7 +249,12 @@ const CreditoPage = ({ creditoDisponivel, saldoX88, onSubmit, transacoes = [], o
           {/* Resumo */}
           {valorNumerico > 0 && (
             <div className="bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-yellow-950 dark:to-orange-950 border-2 border-yellow-300 dark:border-yellow-700 p-5 rounded-2xl">
-              <h4 className="font-bold text-lg text-black dark:text-white mb-4">💰 Resumo</h4>
+              <h4 className="font-bold text-lg text-black dark:text-white mb-4 flex items-center gap-2">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                </svg>
+                Resumo
+              </h4>
               
               <div className="space-y-3">
                 <div className="flex justify-between">

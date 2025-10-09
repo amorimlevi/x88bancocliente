@@ -195,7 +195,10 @@ const SegurancaPage = ({ onVoltar }: SegurancaPageProps) => {
           {/* Info */}
           <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-2xl p-4">
             <p className="text-sm text-yellow-800 dark:text-yellow-200">
-              🔒 Nunca compartilhe sua senha com ninguém. O X88 Bank nunca solicitará sua senha por email ou telefone.
+              <svg className="w-4 h-4 inline mr-1" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+              </svg>
+              Nunca compartilhe sua senha com ninguém. O X88 Bank nunca solicitará sua senha por email ou telefone.
             </p>
           </div>
         </div>

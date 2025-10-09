@@ -153,14 +153,20 @@ const TransferirX88Page = ({ saldoDisponivel, onSubmit, userId = '0001' }: Trans
               required
             />
             <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-2">
-              💡 Insira o ID de 6 dígitos da pessoa que receberá o X88
+              <svg className="w-3 h-3 inline mr-1" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+              </svg>
+              Insira o ID de 6 dígitos da pessoa que receberá o X88
             </p>
 
             {/* Carregando */}
             {buscandoUsuario && (
               <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
                 <p className="text-sm text-blue-700 dark:text-blue-300">
-                  🔍 Buscando usuário...
+                  <svg className="w-4 h-4 inline mr-1 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              Buscando usuário...
                 </p>
               </div>
             )}
@@ -215,8 +221,11 @@ const TransferirX88Page = ({ saldoDisponivel, onSubmit, userId = '0001' }: Trans
           {/* Resumo da Transferência */}
           {destinatarioId && valorX88 && Number(valorX88) > 0 && (
             <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4">
-              <p className="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-2">
-                📋 Resumo da Transferência
+              <p className="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-2 flex items-center gap-1">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                Resumo da Transferência
               </p>
               <div className="space-y-1 text-sm text-blue-800 dark:text-blue-200">
                 <p>• Destinatário: <span className="font-bold">{usuarioDestinatario ? usuarioDestinatario.nome : destinatarioId}</span> <span className="font-mono font-bold">({destinatarioId})</span></p>

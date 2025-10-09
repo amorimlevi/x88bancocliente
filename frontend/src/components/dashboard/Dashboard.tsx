@@ -41,6 +41,7 @@ interface DashboardProps {
 const Dashboard = ({ onLogout, dadosUsuario, userId = '0001' }: DashboardProps) => {
   const [paginaAtual, setPaginaAtual] = useState('inicio')
   const [paginaAnterior, setPaginaAnterior] = useState<string | null>(null)
+  const [modalAberto, setModalAberto] = useState(false)
   const mainRef = useRef<HTMLElement>(null)
 
   const { cliente, loading: clienteLoading } = useCliente(userId)
@@ -190,6 +191,7 @@ const Dashboard = ({ onLogout, dadosUsuario, userId = '0001' }: DashboardProps) 
             onNavigate={setPaginaAtual}
             userId={carteiraId}
             nomeUsuario={cliente?.nome_completo || cliente?.nome || dadosUsuario?.nome || 'Usuário'}
+            onModalChange={setModalAberto}
           />
         )
       case 'sacar':
@@ -271,11 +273,13 @@ const Dashboard = ({ onLogout, dadosUsuario, userId = '0001' }: DashboardProps) 
       </main>
 
       {/* Bottom Navigation */}
-      <BottomNav 
-        paginaAtual={paginaAtual}
-        onNavigate={setPaginaAtual}
-        scrollContainerRef={mainRef}
-      />
+      {!modalAberto && (
+        <BottomNav 
+          paginaAtual={paginaAtual}
+          onNavigate={setPaginaAtual}
+          scrollContainerRef={mainRef}
+        />
+      )}
     </div>
   )
 }
