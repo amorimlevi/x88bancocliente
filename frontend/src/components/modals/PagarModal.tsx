@@ -49,7 +49,6 @@ const PagarModal: React.FC<PagarModalProps> = ({ isOpen, onClose, userId }) => {
             setEscaneando(false)
             html5QrcodeScanner.clear()
           } catch (err) {
-            console.error('Erro ao decodificar QR Code:', err)
             alert('QR Code inválido. Por favor, tente novamente.')
           }
         },
@@ -126,8 +125,6 @@ const PagarModal: React.FC<PagarModalProps> = ({ isOpen, onClose, userId }) => {
     if (!dadosPagamento) return
 
     try {
-      console.log('💸 Iniciando pagamento via QR Code:', dadosPagamento)
-      
       const resultado = await transferirX88(
         userId,
         dadosPagamento.contaId,
@@ -135,14 +132,13 @@ const PagarModal: React.FC<PagarModalProps> = ({ isOpen, onClose, userId }) => {
       )
 
       if (resultado.success) {
-        alert(`✅ Pagamento de ${dadosPagamento.valor} X88 para ${dadosPagamento.nomeUsuario || dadosPagamento.contaNumero} realizado com sucesso!`)
+        alert(`Pagamento de ${dadosPagamento.valor} X88 realizado com sucesso!`)
         handleFechar()
       } else {
-        throw new Error(resultado.error || 'Erro ao processar pagamento')
+        alert(`Erro: ${resultado.error || 'Não foi possível processar o pagamento'}`)
       }
     } catch (err: any) {
-      console.error('❌ Erro ao realizar pagamento:', err)
-      alert(`Erro ao realizar pagamento: ${err.message || 'Tente novamente'}`)
+      alert(`Erro: ${err.message || 'Tente novamente'}`)
     }
   }
 

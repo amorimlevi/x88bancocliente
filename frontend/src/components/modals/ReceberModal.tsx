@@ -19,25 +19,25 @@ const ReceberModal: React.FC<ReceberModalProps> = ({ isOpen, onClose, contaId, n
   // Buscar o ID da carteira quando o modal abre
   useEffect(() => {
     const buscarCarteiraId = async () => {
-      if (isOpen && userId) {
+      if (isOpen && contaId) {
         try {
           const { data, error } = await supabase
             .from('carteira_x88')
             .select('id')
-            .eq('cliente_id', userId)
+            .eq('id', parseInt(contaId))
             .single()
 
           if (data && !error) {
             setCarteiraId(String(data.id))
           }
         } catch (err) {
-          console.error('Erro ao buscar ID da carteira:', err)
+          setCarteiraId(contaId)
         }
       }
     }
 
     buscarCarteiraId()
-  }, [isOpen, userId])
+  }, [isOpen, contaId])
 
   if (!isOpen) return null
 
@@ -59,8 +59,8 @@ const ReceberModal: React.FC<ReceberModalProps> = ({ isOpen, onClose, contaId, n
   }
 
   const dadosPagamento = JSON.stringify({
-    contaId: carteiraId, // ID da carteira para a transferência
-    contaNumero: contaId, // Número da conta para exibição
+    contaId: carteiraId || contaId,
+    contaNumero: contaId,
     valor: parseFloat(valor),
     nomeUsuario
   })
