@@ -12,6 +12,7 @@ interface PagarModalProps {
 
 interface DadosPagamento {
   contaId: string
+  contaNumero?: string
   valor: number
   nomeUsuario?: string
 }
@@ -134,7 +135,7 @@ const PagarModal: React.FC<PagarModalProps> = ({ isOpen, onClose, userId }) => {
       )
 
       if (resultado.success) {
-        alert(`✅ Pagamento de ${dadosPagamento.valor} X88 para ${dadosPagamento.nomeUsuario || dadosPagamento.contaId} realizado com sucesso!`)
+        alert(`✅ Pagamento de ${dadosPagamento.valor} X88 para ${dadosPagamento.nomeUsuario || dadosPagamento.contaNumero} realizado com sucesso!`)
         handleFechar()
       } else {
         throw new Error(resultado.error || 'Erro ao processar pagamento')
@@ -278,7 +279,7 @@ const PagarModal: React.FC<PagarModalProps> = ({ isOpen, onClose, userId }) => {
                   {dadosPagamento.nomeUsuario || 'Destinatário'}
                 </p>
                 <p className="text-sm font-mono text-neutral-600 dark:text-neutral-400">
-                  Conta: {dadosPagamento.contaId}
+                  Conta: {dadosPagamento.contaNumero || dadosPagamento.contaId}
                 </p>
               </div>
 

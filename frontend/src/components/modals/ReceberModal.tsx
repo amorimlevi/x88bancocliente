@@ -59,7 +59,8 @@ const ReceberModal: React.FC<ReceberModalProps> = ({ isOpen, onClose, contaId, n
   }
 
   const dadosPagamento = JSON.stringify({
-    contaId: carteiraId, // ID da carteira, não o número da conta
+    contaId: carteiraId, // ID da carteira para a transferência
+    contaNumero: contaId, // Número da conta para exibição
     valor: parseFloat(valor),
     nomeUsuario
   })
