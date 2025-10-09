@@ -1,17 +1,43 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { QRCodeSVG } from 'qrcode.react'
+import { supabase } from '../../lib/supabase'
 
 interface ReceberModalProps {
   isOpen: boolean
   onClose: () => void
   contaId: string
   nomeUsuario?: string
+  userId: string
 }
 
-const ReceberModal: React.FC<ReceberModalProps> = ({ isOpen, onClose, contaId, nomeUsuario }) => {
+const ReceberModal: React.FC<ReceberModalProps> = ({ isOpen, onClose, contaId, nomeUsuario, userId }) => {
   const [valor, setValor] = useState('')
   const [qrCodeGerado, setQrCodeGerado] = useState(false)
   const [copiado, setCopiado] = useState(false)
+  const [carteiraId, setCarteiraId] = useState<string>('')
+
+  // Buscar o ID da carteira quando o modal abre
+  useEffect(() => {
+    const buscarCarteiraId = async () => {
+      if (isOpen && userId) {
+        try {
+          const { data, error } = await supabase
+            .from('carteira_x88')
+            .select('id')
+            .eq('cliente_id', userId)
+            .single()
+
+          if (data && !error) {
+            setCarteiraId(String(data.id))
+          }
+        } catch (err) {
+          console.error('Erro ao buscar ID da carteira:', err)
+        }
+      }
+    }
+
+    buscarCarteiraId()
+  }, [isOpen, userId])
 
   if (!isOpen) return null
 
@@ -33,7 +59,7 @@ const ReceberModal: React.FC<ReceberModalProps> = ({ isOpen, onClose, contaId, n
   }
 
   const dadosPagamento = JSON.stringify({
-    contaId,
+    contaId: carteiraId, // ID da carteira, não o número da conta
     valor: parseFloat(valor),
     nomeUsuario
   })

@@ -246,6 +246,7 @@ const HomePage = ({
         onClose={() => setModalReceber(false)}
         contaId={userId}
         nomeUsuario={nomeUsuario}
+        userId={userId}
       />
 
       <PagarModal
