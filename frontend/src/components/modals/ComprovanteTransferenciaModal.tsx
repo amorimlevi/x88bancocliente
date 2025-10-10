@@ -82,7 +82,8 @@ const ComprovanteTransferenciaModal: React.FC<ComprovanteTransferenciaModalProps
             <img 
               src={logoX88} 
               alt="X88"
-              className="w-20 h-12 object-contain mx-auto mb-4 opacity-60"
+              className="w-20 h-auto mx-auto mb-4 opacity-60"
+              style={{ maxHeight: '48px' }}
             />
             <h3 className="text-xl font-bold text-black dark:text-white mb-1">
               Comprovante de transferência
