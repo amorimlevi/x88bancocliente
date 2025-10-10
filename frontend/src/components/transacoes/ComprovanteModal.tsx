@@ -4,6 +4,7 @@ import { useTimezone } from '../../hooks/useTimezone'
 import { buscarDestinatarioPorIdCarteira } from '../../services/supabaseService'
 import { supabase } from '../../lib/supabase'
 import html2canvas from 'html2canvas'
+import logoX88 from '../../assets/images/LOGOTIPO X88 BLACK PNG.fw.png'
 
 interface Transacao {
   id: string
@@ -196,7 +197,7 @@ const ComprovanteModal = ({ transacao, onClose, userId = '0001', nomeUsuario = '
           {/* Logo e Título */}
           <div className="text-center mb-6 pb-6 border-b border-neutral-200 dark:border-neutral-800">
             <img 
-              src="https://res.cloudinary.com/dxchbdcai/image/upload/v1759251700/LOGOTIPO_X88_BLACK_PNG.fw_zpepci.png" 
+              src={logoX88} 
               alt="X88"
               className="w-20 h-12 object-contain mx-auto mb-4 opacity-60"
             />
