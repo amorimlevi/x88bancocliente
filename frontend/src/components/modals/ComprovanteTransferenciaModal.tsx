@@ -35,10 +35,16 @@ const ComprovanteTransferenciaModal: React.FC<ComprovanteTransferenciaModalProps
     if (!comprovanteRef.current) return
 
     try {
+      await new Promise(resolve => setTimeout(resolve, 100))
+      
       const canvas = await html2canvas(comprovanteRef.current, {
         backgroundColor: '#ffffff',
-        scale: 2,
-        logging: false
+        scale: 3,
+        logging: false,
+        useCORS: true,
+        allowTaint: true,
+        windowWidth: comprovanteRef.current.scrollWidth,
+        windowHeight: comprovanteRef.current.scrollHeight,
       })
 
       canvas.toBlob(async (blob) => {
