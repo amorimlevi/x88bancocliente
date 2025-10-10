@@ -3,6 +3,7 @@ import { Html5QrcodeScanner } from 'html5-qrcode'
 import { transferirX88, buscarDestinatarioPorIdCarteira } from '../../services/supabaseService'
 import { supabase } from '../../lib/supabase'
 import ComprovanteTransferenciaModal from './ComprovanteTransferenciaModal'
+import LoadingTransferenciaModal from './LoadingTransferenciaModal'
 
 interface PagarModalProps {
   isOpen: boolean
@@ -30,6 +31,8 @@ const PagarModal: React.FC<PagarModalProps> = ({ isOpen, onClose, userId, remete
   const [scanner, setScanner] = useState<Html5QrcodeScanner | null>(null)
   const [comprovanteAberto, setComprovanteAberto] = useState(false)
   const [dadosComprovante, setDadosComprovante] = useState<any>(null)
+  const [loadingStatus, setLoadingStatus] = useState<'enviando' | 'enviado' | 'erro' | null>(null)
+  const [mensagemErro, setMensagemErro] = useState('')
 
   useEffect(() => {
     if (isOpen && escaneando) {
@@ -132,7 +135,10 @@ const PagarModal: React.FC<PagarModalProps> = ({ isOpen, onClose, userId, remete
   const handleConfirmarPagamento = async () => {
     if (!dadosPagamento) return
 
+    setLoadingStatus('enviando')
+
     try {
+      // Processa a transferência
       const resultado = await transferirX88(
         userId,
         dadosPagamento.contaId,
@@ -161,6 +167,13 @@ const PagarModal: React.FC<PagarModalProps> = ({ isOpen, onClose, userId, remete
             }
           }
         }
+
+        // Aguarda a animação completar (5 segundos = tempo total da animação)
+        await new Promise(resolve => setTimeout(resolve, 5100))
+        
+        // Assim que a barra chega a 100%, mostra "enviado" IMEDIATAMENTE
+        setLoadingStatus('enviado')
+        await new Promise(resolve => setTimeout(resolve, 1200))
         
         setDadosComprovante({
           valor: dadosPagamento.valor,
@@ -174,15 +187,22 @@ const PagarModal: React.FC<PagarModalProps> = ({ isOpen, onClose, userId, remete
           remetenteTelefone: remetenteTelefone
         })
         
+        setLoadingStatus(null)
         setEscaneando(false)
         setConfirmando(false)
         setDadosPagamento(null)
         setComprovanteAberto(true)
       } else {
-        alert(`Erro: ${resultado.error || 'Não foi possível processar o pagamento'}`)
+        setMensagemErro(resultado.error || 'Não foi possível processar o pagamento')
+        setLoadingStatus('erro')
+        await new Promise(resolve => setTimeout(resolve, 2000))
+        setLoadingStatus(null)
       }
     } catch (err: any) {
-      alert(`Erro: ${err.message || 'Tente novamente'}`)
+      setMensagemErro(err.message || 'Tente novamente')
+      setLoadingStatus('erro')
+      await new Promise(resolve => setTimeout(resolve, 2000))
+      setLoadingStatus(null)
     }
   }
 
@@ -364,6 +384,13 @@ const PagarModal: React.FC<PagarModalProps> = ({ isOpen, onClose, userId, remete
         dadosTransferencia={dadosComprovante}
       />
     )}
+
+    {/* Loading Modal */}
+    <LoadingTransferenciaModal
+      isOpen={loadingStatus !== null}
+      status={loadingStatus || 'enviando'}
+      mensagemErro={mensagemErro}
+    />
     </>
   )
 }

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { buscarDestinatarioPorIdCarteira } from '../../services/supabaseService'
 import { supabase } from '../../lib/supabase'
 import ComprovanteTransferenciaModal from './ComprovanteTransferenciaModal'
+import LoadingTransferenciaModal from './LoadingTransferenciaModal'
 
 interface TransferirModalProps {
   isOpen: boolean
@@ -41,6 +42,8 @@ const TransferirModal: React.FC<TransferirModalProps> = ({
   const [dadosComprovante, setDadosComprovante] = useState<any>(null)
   const [contatosRecentes, setContatosRecentes] = useState<UsuarioDestinatario[]>([])
   const [mostrarContatos, setMostrarContatos] = useState(true)
+  const [loadingStatus, setLoadingStatus] = useState<'enviando' | 'enviado' | 'erro' | null>(null)
+  const [mensagemErro, setMensagemErro] = useState('')
 
   useEffect(() => {
     if (isOpen) {
@@ -85,7 +88,7 @@ const TransferirModal: React.FC<TransferirModalProps> = ({
     return () => clearTimeout(timer)
   }, [destinatarioId])
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (destinatarioId && valorX88 && Number(valorX88) > 0) {
       if (Number(valorX88) > saldoDisponivel) {
@@ -93,56 +96,81 @@ const TransferirModal: React.FC<TransferirModalProps> = ({
         return
       }
       
-      onSubmit(destinatarioId, Number(valorX88), usuarioDestinatario?.nome, async () => {
-        if (usuarioDestinatario) {
-          const contatosAtualizados = [
-            usuarioDestinatario,
-            ...contatosRecentes.filter(c => c.id !== usuarioDestinatario.id)
-          ].slice(0, 5)
-          
-          setContatosRecentes(contatosAtualizados)
-          localStorage.setItem(`contatos_recentes_${userId}`, JSON.stringify(contatosAtualizados))
-        }
-
-        let destinatarioEmail = usuarioDestinatario?.email || ''
-        let destinatarioTelefone = ''
+      setLoadingStatus('enviando')
+      
+      try {
+        let destinatarioEmailFinal = ''
+        let destinatarioTelefoneFinal = ''
         
-        const infoDestinatario = await buscarDestinatarioPorIdCarteira(destinatarioId)
-        if (infoDestinatario.success && infoDestinatario.destinatario) {
-          const dest = infoDestinatario.destinatario
-          
-          if (dest.tipo === 'cliente' && dest.clienteId) {
-            const { data } = await supabase
-              .from('clientes')
-              .select('email, telefone')
-              .eq('id', dest.clienteId)
-              .single()
+        // Processa a transferência
+        onSubmit(destinatarioId, Number(valorX88), usuarioDestinatario?.nome, async () => {
+          if (usuarioDestinatario) {
+            const contatosAtualizados = [
+              usuarioDestinatario,
+              ...contatosRecentes.filter(c => c.id !== usuarioDestinatario.id)
+            ].slice(0, 5)
             
-            if (data) {
-              destinatarioEmail = data.email || destinatarioEmail
-              destinatarioTelefone = data.telefone || ''
+            setContatosRecentes(contatosAtualizados)
+            localStorage.setItem(`contatos_recentes_${userId}`, JSON.stringify(contatosAtualizados))
+          }
+
+          let destinatarioEmail = usuarioDestinatario?.email || ''
+          let destinatarioTelefone = ''
+          
+          const infoDestinatario = await buscarDestinatarioPorIdCarteira(destinatarioId)
+          if (infoDestinatario.success && infoDestinatario.destinatario) {
+            const dest = infoDestinatario.destinatario
+            
+            if (dest.tipo === 'cliente' && dest.clienteId) {
+              const { data } = await supabase
+                .from('clientes')
+                .select('email, telefone')
+                .eq('id', dest.clienteId)
+                .single()
+              
+              if (data) {
+                destinatarioEmail = data.email || destinatarioEmail
+                destinatarioTelefone = data.telefone || ''
+              }
             }
           }
-        }
+          
+          destinatarioEmailFinal = destinatarioEmail
+          destinatarioTelefoneFinal = destinatarioTelefone
+        })
+        
+        // Aguarda a animação completar (5 segundos = tempo total da animação)
+        await new Promise(resolve => setTimeout(resolve, 5100))
+        
+        // Assim que a barra chega a 100%, mostra "enviado" IMEDIATAMENTE
+        setLoadingStatus('enviado')
+        
+        await new Promise(resolve => setTimeout(resolve, 1200))
         
         setDadosComprovante({
           valor: Number(valorX88),
           destinatarioNome: usuarioDestinatario?.nome || 'Destinatário',
           destinatarioConta: destinatarioId,
-          destinatarioEmail: destinatarioEmail,
-          destinatarioTelefone: destinatarioTelefone,
+          destinatarioEmail: destinatarioEmailFinal,
+          destinatarioTelefone: destinatarioTelefoneFinal,
           remetenteConta: remetenteConta,
           remetenteNome: remetenteNome,
           remetenteEmail: remetenteEmail,
           remetenteTelefone: remetenteTelefone
         })
         
+        setLoadingStatus(null)
         setDestinatarioId('')
         setValorX88('')
         setUsuarioDestinatario(null)
         setMostrarContatos(true)
         setComprovanteAberto(true)
-      })
+      } catch (error) {
+        setMensagemErro('Erro ao processar transferência')
+        setLoadingStatus('erro')
+        await new Promise(resolve => setTimeout(resolve, 2000))
+        setLoadingStatus(null)
+      }
     }
   }
 
@@ -408,6 +436,13 @@ const TransferirModal: React.FC<TransferirModalProps> = ({
         dadosTransferencia={dadosComprovante}
       />
     )}
+
+    {/* Loading Modal */}
+    <LoadingTransferenciaModal
+      isOpen={loadingStatus !== null}
+      status={loadingStatus || 'enviando'}
+      mensagemErro={mensagemErro}
+    />
     </>
   )
 }
